@@ -1,0 +1,1157 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Тренажёр «Части речи»</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&family=Pangolin&family=Neucha&family=Caveat:wght@700&display=swap">
+<style>
+/* Тренажёр для интерактивной доски: всё в rem, размер шрифта подбирается под высоту экрана (fit()) */
+:root{
+  color-scheme:light;
+  --paper:#fbf9f2; --rule:#e3eaf5; --margin:#f4b9b9;
+  --ink:#26285a; --soft:#666a94; --edge:#e2e5f2; --edge-d:#c8cee6;
+  --sel:#fff0a0; --sun:#ffc93c; --sun-d:#d9a218;
+  --good:#1e9a55; --good-l:#e2f5ea; --bad:#d93b30; --bad-l:#fde9e7;
+  --noun:#3b7cf0; --noun-l:#e9f1fe;
+  --adj:#1f9d57;  --adj-l:#e4f6ec;
+  --verb:#e8473a; --verb-l:#fdecea;
+  --num:#ec8a00;  --num-l:#fff2de;
+  --pron:#9b51e0; --pron-l:#f3eafc;
+  --adv:#0b9a9d;  --adv-l:#ddf4f4;
+  --serv:#7c839c; --serv-l:#eef0f5;
+  --soft-l:#f1f2f8;
+  --board:#2f6a4f; --board-dark:#22533d; --wood:#b07a45;
+  --chalk:#f8f6ec; --chalk-y:#ffe98a; --chalk-g:#b9f5b1; --chalk-r:#ffb0a8; --chalk-b:#a9d8ff;
+  --title:"Nunito","Trebuchet MS",sans-serif;
+  --head:"Pangolin","Comic Sans MS",cursive;
+  --body:"Nunito","Trebuchet MS","Segoe UI",sans-serif;
+  --hand:"Caveat","Comic Sans MS",cursive;
+  --chalkf:"Neucha","Comic Sans MS",cursive;
+  --a:.8rem;
+}
+*{box-sizing:border-box}
+html{font-size:16px;height:100%;-webkit-text-size-adjust:100%}
+body{margin:0;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:var(--body);font-weight:600;font-size:1.1rem;line-height:1.4}
+[hidden]{display:none!important}
+button{font-family:inherit}
+button:focus-visible,[tabindex]:focus-visible{outline:3px dashed var(--num);outline-offset:3px}
+.app{height:100vh;height:100dvh;display:flex;flex-direction:column}
+
+/* ---------- header ---------- */
+.hdr{font-size:clamp(11px,min(1.2rem,.86vw),30px);flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:.45em 1.3em;padding:.45em 1.3em;padding-top:calc(.45em + env(safe-area-inset-top,0px));background:#fff;border-bottom:3px solid var(--ink);position:relative;z-index:3}
+.hdr h1{font-family:var(--title);font-weight:900;font-size:2em;line-height:1;margin:0;white-space:nowrap;letter-spacing:.01em}
+.hdr h1 span:nth-child(5n+1){color:var(--noun)} .hdr h1 span:nth-child(5n+2){color:var(--verb)} .hdr h1 span:nth-child(5n+3){color:var(--num)} .hdr h1 span:nth-child(5n+4){color:var(--adj)} .hdr h1 span:nth-child(5n){color:var(--pron)}
+.posf{display:flex;flex-wrap:wrap;align-items:center;gap:.35em}
+.pf-l{font-size:.85em;font-weight:800;color:var(--soft);margin-right:.15em}
+.pf{font-size:.9em;font-weight:800;padding:.18em .7em;border-radius:999px;border:2px solid var(--c);background:#fff;color:var(--soft);cursor:pointer;opacity:.55;text-decoration:line-through}
+.pf.on{background:var(--c);color:#fff;opacity:1;text-decoration:none}
+.dateline{margin-left:auto;font-family:var(--hand);font-size:1.65em;line-height:1;white-space:nowrap;text-align:right}
+.dateline small{font-size:inherit}
+.dateline small::before{content:" · "}
+.stars{display:flex;align-items:center;gap:.4em;background:#fffbea;border:2.5px solid var(--sun);border-radius:1em;padding:.2em .8em;box-shadow:0 .18em 0 var(--sun-d)}
+.stars .big{font-family:var(--head);font-size:1.5em;line-height:1}
+.stars .lbl{font-size:.8em;color:var(--soft);line-height:1.1}
+.stars.pop{animation:pop .5s}
+@keyframes pop{50%{transform:scale(1.18) rotate(-3deg)}}
+
+/* ---------- stage (one screen, no page scroll) ---------- */
+.stage{flex:1;min-height:0;overflow:auto;position:relative;padding:.9rem 1.5rem 1rem 3rem;
+  background-image:linear-gradient(90deg,transparent 1.6rem,var(--margin) 1.6rem,var(--margin) calc(1.6rem + 2px),transparent calc(1.6rem + 2px)),linear-gradient(transparent calc(2rem - 1px),var(--rule) calc(2rem - 1px));
+  background-size:100% 100%,100% 2rem;background-attachment:local}
+.sec{min-height:100%;display:flex;flex-direction:column}
+.shead{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem 1rem;margin-bottom:.7rem}
+.shead h2{font-family:var(--head);font-weight:400;font-size:2rem;line-height:1.1;margin:0;white-space:nowrap}
+.shead p{margin:0;color:var(--soft);flex:1 1 20rem;font-size:1.05rem}
+.shead .sp{flex:1}
+.status{font-weight:800;color:var(--soft)}
+.status b{color:var(--ink)}
+.good{color:var(--good)!important} .bad{color:var(--bad)!important}
+.done-note{font-family:var(--head);font-size:1.5rem;color:var(--good)}
+.legend{font-size:.9rem;color:var(--soft);margin:.6rem 0 0}
+
+.btn{font-size:1.05rem;font-weight:800;padding:.5rem 1rem;border-radius:.9rem;border:2.5px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer;box-shadow:0 .2rem 0 var(--ink);white-space:nowrap;touch-action:manipulation}
+.btn:active{transform:translateY(.2rem);box-shadow:none}
+.btn.primary{background:var(--sun)}
+.btn.go{background:var(--good);color:#fff;border-color:#13723d;box-shadow:0 .2rem 0 #13723d}
+.bar{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;margin-top:.8rem}
+.toolbar{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;margin-bottom:.8rem}
+.pills{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center}
+.pill{font-size:.95rem;font-weight:800;padding:.28rem .85rem;border-radius:999px;border:2.5px solid var(--c,var(--soft));background:#fff;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:.35rem;white-space:nowrap}
+.pill.on{background:var(--c,var(--soft));color:#fff}
+.pill .e{font-size:1.1rem}
+.cnt-l{font-weight:800;color:var(--soft);font-size:.95rem;margin-right:.1rem}
+.addbar{display:flex;gap:.4rem;flex:1 1 18rem;max-width:34rem}
+.addbar.wide{max-width:46rem}
+input[type=text]{font:inherit;font-size:1.05rem;width:100%;min-width:0;padding:.42rem .8rem;border-radius:.8rem;border:2.5px solid var(--edge-d);background:#fff;color:var(--ink)}
+input[type=text]:focus{outline:none;border-color:var(--noun)}
+
+/* ---------- puzzle ---------- */
+.legend1{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;font-size:.95rem}
+.legend1 .lg{padding:.12rem .7rem;border-radius:.6rem;font-weight:800}
+.lg-h{background:var(--noun);color:#fff} .lg-m{background:#ffd95a} .lg-q{background:#8ccaff}
+.legend1 .arr{color:var(--soft);font-weight:900}
+.pzs{display:grid;grid-template-columns:repeat(var(--n),minmax(0,24rem));justify-content:center;gap:1.1rem;align-items:start}
+/* one block = one paper jigsaw; white gaps are the cut lines, knobs are round tabs that reach into the neighbour */
+.pz{--k:1.5rem;--g:4px;display:grid;grid-template-columns:1fr 1fr;gap:var(--g);padding:.45rem;background:#fff;border:2.5px dashed var(--edge-d);border-radius:1.1rem;min-width:0}
+.pz.hover{border-color:var(--ink);border-style:solid;background:var(--sel)}
+.pz.full{border-color:var(--c);border-style:solid}
+.pz .pc{position:relative;display:flex;align-items:center;justify-content:center;gap:.35rem;text-align:center;min-height:3.4rem;padding:.65rem .55rem;border-radius:.55rem;font-weight:800;font-size:1.05rem;line-height:1.15;color:var(--ink);user-select:none;-webkit-user-select:none;min-width:0;overflow-wrap:break-word}
+.pz .wide{grid-column:1/-1}
+.pz .pc.head{background:var(--c);color:#fff;font-family:var(--head);font-weight:400;font-size:1.2rem;min-height:3.2rem;flex-wrap:wrap;row-gap:0;padding-inline:.4rem}
+.pz .pc.head .e{font-size:1.4rem}
+.pz .pc.ghost{background:var(--cl);color:var(--c);font-size:1.5rem;cursor:pointer}
+.pz .pc.ghost:hover,.pz.hover .pc.ghost{filter:brightness(.96)}
+.pc.pm{background:#ffd95a}
+.pc.pq{background:#8ccaff}
+.pz .pc.pq:nth-child(even){background:#74b9f7}
+.pz.hover .pc.ghost{background:#fff}
+/* knobs */
+.pc.kb::after,.pc.kbl::after,.pc.kbr::after,.pc.kr::after{content:"";position:absolute;z-index:2;width:var(--k);height:var(--k);border-radius:50%;background:inherit;box-shadow:0 0 0 var(--g) #fff;pointer-events:none}
+.pc.kb::after,.pc.kbl::after,.pc.kbr::after{top:calc(100% + var(--g)/2 - var(--k)*.3);margin-left:calc(var(--k)/-2);clip-path:inset(calc(var(--k)*.3 - var(--g)/2) -6px -6px -6px)}
+.pc.kb::after{left:50%} .pc.kbl::after{left:25%} .pc.kbr::after{left:75%}
+.pc.kr::after{top:50%;margin-top:calc(var(--k)/-2);left:calc(100% + var(--g)/2 - var(--k)*.3);clip-path:inset(-6px -6px -6px calc(var(--k)*.3 - var(--g)/2))}
+.trays{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem;margin-top:1rem}
+.tray2{background:#fff;border:2.5px dashed var(--edge-d);border-radius:1.1rem;padding:.5rem .7rem .7rem}
+.tray2-h{font-family:var(--head);font-size:1.15rem;margin-bottom:.35rem}
+.pz-tray{display:flex;flex-wrap:wrap;gap:.45rem;min-height:2.9rem;align-items:center}
+.pz-tray .empty{color:var(--soft);font-size:.95rem}
+.pz-tray .pc{display:inline-flex;align-items:center;min-height:2.7rem;padding:.35rem .9rem;border-radius:.55rem;font-weight:800;font-size:1.02rem;line-height:1.15;color:var(--ink);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 .18rem 0 rgba(0,0,0,.15)}
+.pz-tray .pc.sel{background:#ff9f43;color:#fff;transform:translateY(-.25rem)}
+@media (max-width:1100px){.pzs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:760px){.pzs{grid-template-columns:repeat(2,minmax(0,1fr))}.trays{grid-template-columns:1fr}}
+
+/* drag */
+.dragging{cursor:grabbing;transition:none;will-change:transform;opacity:.95}
+.lifted{opacity:.25}
+.shake{animation:shake .45s;border-color:var(--bad)!important;color:var(--bad)!important}
+.pc.shake{animation:shake .45s,redflash .7s;color:var(--ink)!important}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes redflash{0%,55%{background:var(--bad);color:#fff}}
+
+/* ---------- chips & buckets ---------- */
+.tray{min-height:4rem;display:flex;flex-wrap:wrap;gap:.5rem;padding:.7rem;border:2.5px dashed var(--edge-d);border-radius:1.1rem;background:rgba(255,255,255,.92);align-content:flex-start}
+.tray .empty{color:var(--soft);align-self:center}
+.chip{--c:var(--ink);display:inline-flex;align-items:center;gap:.3rem;padding:.28rem .8rem;border-radius:.75rem;border:2.5px solid var(--edge-d);background:#fff;color:var(--ink);font-weight:800;font-size:1.2rem;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;box-shadow:0 .18rem 0 var(--edge-d)}
+.chip.sel{background:var(--sel);border-color:var(--ink);transform:translateY(-.2rem) scale(1.05);box-shadow:0 .3rem 0 var(--ink)}
+.zitems .chip{border-color:var(--c);box-shadow:0 .12rem 0 var(--c);font-size:1.05rem;padding:.12rem .6rem}
+.chip.own{background:#fdf0ff;border-color:#d9a6f2}
+.chip.ok{border-color:var(--good)} .chip.ok::after{content:"✓";color:var(--good)}
+.chip.badm{border-color:var(--bad)} .chip.badm::after{content:"✗";color:var(--bad)}
+.chip.unk::after{content:"?";color:var(--soft)}
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:.8rem;margin-top:.9rem}
+.bucket{--c:var(--noun);--cl:var(--noun-l);border:3px solid var(--c);border-radius:1.1rem;background:var(--cl);padding:.5rem .7rem .7rem;display:flex;flex-direction:column;gap:.45rem;min-width:0;min-height:7rem}
+.bucket[data-zone],.zone.sub{cursor:pointer}
+.bhead{min-width:0}
+.bhead b{display:block;font-family:var(--head);font-weight:400;color:var(--c);font-size:1.15rem;line-height:1.1;overflow-wrap:break-word;hyphens:auto}
+.bhead span{display:block;font-size:.85rem;color:var(--soft);line-height:1.25}
+.bhead .e{font-style:normal;font-size:1.15rem}
+.zitems{display:flex;flex-wrap:wrap;gap:.35rem;min-height:2rem}
+.zones{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.35rem}
+.zone.sub{border:2px dashed var(--c);border-radius:.7rem;padding:.35rem;min-width:0;background:#fff}
+.zone.sub .zl{display:block;font-size:.8rem;font-weight:800;color:var(--c);margin-bottom:.2rem}
+.bucket.hover,.zone.sub.hover{outline:3px solid var(--c);outline-offset:2px;background:#fff}
+
+/* ---------- tasks ---------- */
+.twrap{display:grid;grid-template-columns:17rem minmax(0,1fr);gap:1.3rem;align-items:start}
+.tside{display:flex;flex-direction:column;gap:.3rem;background:#fff;border:2.5px solid var(--edge);border-radius:1.1rem;padding:.6rem}
+.tlabel{font-size:.78rem;font-weight:900;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin:.15rem .2rem .1rem}
+.tlist+.tlabel{margin-top:.6rem}
+.tlist{display:flex;flex-direction:column;gap:.28rem}
+.tpos,.ttask{display:flex;align-items:center;gap:.5rem;text-align:left;font-size:1rem;font-weight:800;padding:.38rem .6rem;border-radius:.8rem;border:2.5px solid transparent;background:var(--cl);color:var(--ink);cursor:pointer;line-height:1.15}
+.tpos .e{font-size:1.2rem}
+.tpos.on{background:var(--c);color:#fff}
+.ttask{background:#fff;border-color:var(--edge)}
+.ttask .n{flex:none;width:1.55rem;height:1.55rem;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--cl);color:var(--c);font-size:.88rem}
+.ttask .tn{flex:1}
+.ttask .k{font-size:.9rem}
+.ttask.on{border-color:var(--c);background:var(--cl)}
+.ttask.on .n{background:var(--c);color:#fff}
+.tmain{min-width:0;display:flex;flex-direction:column}
+.hint{margin:0 0 .8rem;background:#fff;border-left:.35rem solid var(--c);border-radius:.6rem;padding:.45rem .9rem;font-size:1.05rem}
+.hint b{color:var(--c)}
+
+/* ---------- pick (multiple choice) ---------- */
+.qcard{background:#fff;border:3px solid var(--c);border-radius:1.4rem;padding:1.1rem 1.3rem 1.2rem;box-shadow:0 .35rem 0 var(--c);max-width:48rem}
+.qprog{display:flex;gap:.35rem;margin-bottom:.8rem;flex-wrap:wrap}
+.qprog i{width:.9rem;height:.9rem;border-radius:50%;background:var(--edge)}
+.qprog i.d{background:var(--good)} .qprog i.c{background:var(--sun);box-shadow:0 0 0 2px var(--ink)}
+.qtext{font-family:var(--head);font-size:2rem;line-height:1.25;margin-bottom:1rem}
+.qtext .gap{display:inline-block;min-width:5rem;border-bottom:3px dashed var(--c);text-align:center;color:var(--c)}
+.qtext small{display:block;font-family:var(--body);font-size:1rem;color:var(--soft)}
+.opts{display:flex;flex-wrap:wrap;gap:.6rem}
+.opt{font-size:1.35rem;font-weight:800;padding:.5rem 1.2rem;border-radius:.9rem;border:3px solid var(--edge-d);background:#fff;color:var(--ink);cursor:pointer;box-shadow:0 .2rem 0 var(--edge-d)}
+.opt:hover{border-color:var(--c)}
+.opt.right{background:var(--good);border-color:var(--good);color:#fff;box-shadow:0 .2rem 0 #13723d}
+.opt.wrong{border-color:var(--bad);color:var(--bad);text-decoration:line-through;opacity:.7}
+.why{margin-top:.7rem;font-size:1.05rem;color:var(--good);min-height:1.5em}
+.finish{text-align:center}
+.finish .bigstar{font-size:3.5rem;line-height:1}
+.finish h3{font-family:var(--head);font-weight:400;font-size:1.8rem;margin:.3rem 0}
+.finish p{margin:.4rem 0 .8rem}
+
+/* ---------- quiz ---------- */
+.quiz{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.9rem;text-align:center}
+.qzcard{--c:var(--ink);background:#fff;border:3px solid var(--c);border-radius:1.6rem;box-shadow:0 .4rem 0 var(--c);padding:1.2rem 2rem 1.5rem;width:100%;max-width:66rem}
+.qzcard .qprog{justify-content:center}
+.qzword{font-family:var(--head);font-size:4.6rem;line-height:1.1;margin:.3rem 0 .1rem}
+.qzword.got{color:var(--c)}
+.qzlab{font-family:var(--hand);font-size:1.9rem;line-height:1.1;min-height:2.1rem;color:var(--c)}
+.qzopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(12.5rem,1fr));gap:.7rem;margin-top:1rem}
+.qzo{display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.55rem .6rem .65rem;border-radius:1rem;border:3px solid var(--c);background:var(--cl);color:var(--ink);cursor:pointer;box-shadow:0 .25rem 0 var(--c);font-weight:800;font-size:1.15rem;line-height:1.15}
+.qzo .e{font-size:1.8rem;line-height:1.1}
+.qzo small{font-weight:700;color:var(--soft);font-size:.85rem}
+.qzo.right{background:var(--c);color:#fff} .qzo.right small{color:#fff}
+.qzo.wrong{opacity:.35}
+.qzinfo{display:flex;gap:1.4rem;justify-content:center;flex-wrap:wrap;color:var(--soft);font-weight:800}
+
+/* ---------- hunt ---------- */
+.hunt-task{display:flex;align-items:center;gap:.5rem .9rem;flex-wrap:wrap;background:#fff;border:3px solid var(--c);border-radius:1.2rem;padding:.55rem 1rem;box-shadow:0 .3rem 0 var(--c);font-size:1.25rem;font-weight:800;margin-bottom:1rem;align-self:flex-start}
+.hunt-task .tg{background:var(--c);color:#fff;border-radius:.7rem;padding:.1rem .8rem;font-family:var(--head);font-weight:400;font-size:1.5rem}
+.hunt-task small{color:var(--soft);font-weight:700;font-size:1rem}
+.htext{background:#fff;border:2.5px solid var(--edge);border-radius:1.2rem;padding:1.2rem 1.4rem;display:flex;flex-wrap:wrap;gap:.6rem .45rem;align-items:center}
+.hw{font-size:2.5rem;font-weight:800;padding:.1rem .55rem;border-radius:.8rem;border:3px solid transparent;background:transparent;color:var(--ink);cursor:pointer;touch-action:manipulation}
+.hw:hover{background:var(--soft-l)}
+.hw.on{background:var(--sel);border-color:var(--ink)}
+.hw.ok{background:var(--good-l);border-color:var(--good);color:var(--good)}
+.hw.bad{background:var(--bad-l);border-color:var(--bad);color:var(--bad);text-decoration:line-through}
+.hw.miss{border-style:dashed;border-color:var(--num)}
+
+/* ---------- sentence parsing ---------- */
+.ownrow{display:flex;gap:.5rem;margin-top:.6rem;max-width:52rem}
+.sent{background:#fff;border:2.5px solid var(--edge);border-radius:1.2rem;padding:1rem 1.2rem .9rem;display:flex;flex-wrap:wrap;gap:.6rem .8rem;align-items:flex-end;margin-top:.7rem}
+.w{display:inline-flex;flex-direction:column;align-items:center;cursor:pointer;padding:.1rem .35rem;border-radius:.7rem;border:0;background:transparent;font:inherit;color:var(--ink)}
+.w .lab{font-family:var(--hand);font-size:1.4rem;font-weight:700;line-height:1;min-height:1.4rem;white-space:nowrap;color:var(--c,var(--soft))}
+.w .tx{font-size:1.7rem;font-weight:800;border-bottom:3px solid transparent;padding:0 .1rem}
+.w.sel{background:var(--sel)}
+.w.sel .tx{border-bottom-color:var(--ink)}
+.w.ok .tx{border-bottom-color:var(--good)}
+.w.bad .tx{text-decoration:underline wavy var(--bad) 2px;text-underline-offset:5px}
+.w.bad .lab{text-decoration:line-through;text-decoration-color:var(--bad)}
+.w.skip{cursor:default;opacity:.45}
+.palette{background:#fff;border:3px solid var(--ink);border-radius:1.1rem;padding:.55rem .7rem .65rem;margin-top:.8rem;box-shadow:0 .25rem 0 var(--edge-d)}
+.palette .ptitle{font-size:.95rem;color:var(--soft);margin-bottom:.4rem}
+.palette .ptitle b{color:var(--ink)}
+.palette .prow{display:flex;flex-wrap:wrap;gap:.4rem}
+.palette .prow+.prow{margin-top:.5rem;padding-top:.5rem;border-top:2px dashed var(--edge)}
+.pbtn{--c:var(--noun);--cl:var(--noun-l);font-size:1rem;font-weight:800;padding:.38rem .75rem;border-radius:.75rem;border:2.5px solid var(--c);background:var(--cl);color:var(--ink);cursor:pointer}
+.pbtn.on{background:var(--c);color:#fff}
+.pbtn .ab{font-family:var(--hand);font-size:1.2rem;color:var(--c);margin-left:.25rem}
+.pbtn.on .ab{color:#fff}
+
+/* ---------- board ---------- */
+.bdwrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1.2rem;align-items:start}
+.board-wrap{min-width:0}
+.bside{display:flex;flex-direction:column;gap:.7rem}
+.bside .btn{font-size:1.2rem;padding:.7rem 1.2rem}
+.board{background:radial-gradient(ellipse at 30% 20%,var(--board),var(--board-dark));border:.6rem solid var(--wood);border-radius:.7rem;padding:.9rem 1.4rem 1rem;color:var(--chalk);box-shadow:inset 0 0 2.5rem rgba(0,0,0,.3),0 .35rem 0 #8a5a30;min-height:18rem}
+.board .bkind{font-family:var(--chalkf);font-size:1.15rem;color:var(--chalk-y);opacity:.9}
+.board .btask{font-family:var(--chalkf);font-size:1.8rem;line-height:1.2;margin:.15rem 0 .7rem}
+.board .btask b{color:var(--chalk-y);font-weight:400}
+.slots{display:flex;flex-direction:column;gap:.5rem}
+.slot{display:flex;align-items:flex-end;gap:.6rem;flex-wrap:wrap;font-family:var(--chalkf);font-size:1.75rem}
+.slot .pre,.slot .post{white-space:nowrap}
+.slot .tag{font-size:1.1rem;color:var(--chalk-b);border:1.5px dashed rgba(169,216,255,.6);border-radius:.5rem;padding:0 .5rem;align-self:center}
+.slot input[type=text]{font-family:var(--chalkf);font-size:1.85rem;color:var(--chalk);background:transparent;border:0;border-bottom:2.5px dashed rgba(248,246,236,.6);border-radius:0;padding:0 .25rem .1rem;width:auto;flex:1 1 9rem;max-width:17rem}
+.slot input::placeholder{color:rgba(248,246,236,.35)}
+.slot input[type=text]:focus{border-bottom-color:var(--chalk-y)}
+.slot .res{font-size:1.6rem;min-width:1.8rem}
+.slot .res.ok{color:var(--chalk-g)} .slot .res.no{color:var(--chalk-r)} .slot .res.q{color:var(--chalk-y)}
+.slot .fix{flex-basis:100%;font-size:1.2rem;color:var(--chalk-r);margin-top:-.3rem}
+.slot .fix.q{color:var(--chalk-y)}
+.scheme{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.8rem}
+.scheme span{font-family:var(--chalkf);font-size:1.3rem;border:2px solid var(--chalk);border-radius:.5rem;padding:.05rem .6rem}
+.bmsg{font-family:var(--chalkf);font-size:1.35rem;margin-top:.5rem;min-height:1.7rem;color:var(--chalk-g)}
+.ledge{height:1rem;background:linear-gradient(#c78d55,#9b6536);margin:0 1.1rem;border-radius:0 0 .5rem .5rem;display:flex;gap:.6rem;align-items:center;padding-left:1.4rem}
+.ledge i{display:block;width:2.1rem;height:.5rem;border-radius:3px}
+.ledge i:nth-child(1){background:#fff} .ledge i:nth-child(2){background:var(--chalk-y)} .ledge i:nth-child(3){background:var(--chalk-r)} .ledge i:nth-child(4){background:var(--chalk-b)}
+.ledge b{margin-left:auto;margin-right:1.6rem;width:2.8rem;height:.75rem;background:#5b4a3a;border-radius:3px}
+
+/* ---------- bottom menu ---------- */
+.dock{font-size:clamp(11px,min(1.2rem,.86vw),30px);flex:none;display:flex;align-items:center;gap:.9em;padding:.4em 1em;padding-bottom:calc(.4em + env(safe-area-inset-bottom,0px));background:#fff;border-top:3px solid var(--ink);position:relative;z-index:3}
+.seg{display:flex;gap:.3em;flex:none;padding-right:.9em;border-right:2px dashed var(--edge-d)}
+.seg button{font-size:.95em;font-weight:800;padding:.32em .8em;border-radius:999px;border:2.5px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer;box-shadow:0 .15em 0 var(--ink);white-space:nowrap}
+.seg button.on{background:var(--sun)}
+.tabs{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:.45em;padding:.25em .1em .35em;scrollbar-width:thin}
+.tab{flex:0 0 auto;display:inline-flex;align-items:center;gap:.35em;font-family:var(--head);font-size:1.08em;padding:.32em .75em;border-radius:.9em;border:2.5px solid var(--c);background:#fff;color:var(--ink);cursor:pointer;box-shadow:0 .2em 0 var(--c);white-space:nowrap}
+.tab .e{font-size:1.2em}
+.tab.on{background:var(--c);color:#fff;transform:translateY(-.12em)}
+.credit{flex:none;font-size:.68em;line-height:1.25;color:var(--soft);text-align:right}
+.credit a{color:inherit}
+
+/* ---------- owl toast & confetti ---------- */
+.owl{position:fixed;left:50%;top:calc(.8rem + env(safe-area-inset-top,0px));transform:translate(-50%,-180%);background:#fff;border:3px solid var(--ink);border-radius:1.1rem;padding:.45rem 1.1rem .45rem .6rem;display:flex;align-items:center;gap:.5rem;z-index:50;font-family:var(--head);font-size:1.4rem;box-shadow:0 .3rem 0 var(--ink);transition:transform .3s cubic-bezier(.3,1.6,.6,1);max-width:calc(100% - 2rem);pointer-events:none}
+.owl.show{transform:translate(-50%,0)}
+.owl .face{font-size:2rem;line-height:1}
+.owl.no{border-color:var(--num);box-shadow:0 .3rem 0 var(--num)}
+#confetti{position:fixed;left:0;top:0;pointer-events:none;z-index:60;width:100%;height:100%}
+
+@media (max-width:900px){
+  .twrap,.bdwrap{grid-template-columns:1fr}
+  .bside{flex-direction:row;flex-wrap:wrap}
+  .dock{flex-wrap:wrap}
+  .credit{flex-basis:100%;text-align:center}
+}
+@media (max-width:760px){
+  .dateline{display:none}
+  .stage{padding:.8rem .8rem .8rem 1.4rem;background-image:linear-gradient(transparent calc(2rem - 1px),var(--rule) calc(2rem - 1px));background-size:100% 2rem}
+  .shead h2{font-size:1.6rem;white-space:normal}
+  .qzword{font-size:3rem} .hw{font-size:1.5rem} .qtext{font-size:1.5rem}
+  .seg button{padding:.3rem .55rem;font-size:.85rem}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hdr">
+    <h1 id="title">Части речи</h1>
+    <div class="posf" id="posFilter"></div>
+    <span class="dateline" id="dateline"></span>
+    <div class="stars" id="stars"><span class="big">⭐ <span id="starN">0</span></span><span class="lbl">звёзд</span></div>
+  </header>
+
+  <main class="stage" id="stage">
+    <section id="s-match" class="sec"></section>
+    <section id="s-sort" class="sec" hidden></section>
+    <section id="s-tasks" class="sec" hidden></section>
+    <section id="s-quiz" class="sec" hidden></section>
+    <section id="s-hunt" class="sec" hidden></section>
+    <section id="s-sent" class="sec" hidden></section>
+    <section id="s-own" class="sec" hidden></section>
+    <section id="s-board" class="sec" hidden></section>
+  </main>
+
+  <nav class="dock" aria-label="Меню">
+    <div class="seg" id="gradeSeg">
+      <button type="button" data-g="1" id="g1">1 класс</button>
+      <button type="button" data-g="24" id="g24">2–4 класс</button>
+    </div>
+    <div class="tabs" id="tabs">
+      <button type="button" class="tab" data-tab="match" style="--c:var(--noun)"><span class="e">🧩</span>Пазл</button>
+      <button type="button" class="tab" data-tab="sort" style="--c:var(--adj)"><span class="e">🧺</span>Корзинки</button>
+      <button type="button" class="tab" data-tab="tasks" style="--c:var(--verb)"><span class="e">✏️</span>Задания</button>
+      <button type="button" class="tab" data-tab="quiz" style="--c:var(--num)"><span class="e">🎯</span>Викторина</button>
+      <button type="button" class="tab" data-tab="hunt" style="--c:var(--pron)"><span class="e">🔎</span>Найди слова</button>
+      <button type="button" class="tab" data-tab="sent" style="--c:var(--adv)"><span class="e">🔍</span>Разбор</button>
+      <button type="button" class="tab" data-tab="own" style="--c:var(--noun)"><span class="e">📝</span>Мои слова</button>
+      <button type="button" class="tab" data-tab="board" style="--c:var(--adj)"><span class="e">🖍️</span>У доски</button>
+    </div>
+    <div class="credit">Разработчик: Курбаниязова Ильмира Климентовна<br>inst: <a href="https://www.instagram.com/dlya.urokov23/" target="_blank" rel="noopener">@dlya.urokov23</a></div>
+  </nav>
+</div>
+<div class="owl" id="owl" aria-live="polite"><span class="face">🦉</span><span id="owlText"></span></div>
+<canvas id="confetti"></canvas>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const pickOne=a=>a[Math.floor(Math.random()*a.length)];
+const norm=s=>s.toLowerCase().replace(/[.,!?;:«»"()…]/g,'').replace(/ё/g,'е').replace(/\s+/g,' ').trim();
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+$('#title').innerHTML=[...'Части речи'].map(c=>c===' '?' ':`<span>${c}</span>`).join('');
+
+/* ---------- owl, stars, confetti ---------- */
+const PRAISE=['Молодец!','Ура! Верно!','Супер!','Умница!','Отлично!','Так держать!','Здорово!'];
+const OOPS=['Подумай ещё!','Почти! Попробуй снова','Не сдавайся!','Ой! Ещё разок'];
+let owlT;
+function owl(text,bad){const o=$('#owl'); $('#owlText').textContent=text; o.classList.toggle('no',!!bad); o.querySelector('.face').textContent=bad?'🤔':'🦉'; o.classList.add('show'); clearTimeout(owlT); owlT=setTimeout(()=>o.classList.remove('show'),1500);}
+const praise=()=>owl(pickOne(PRAISE)); const oops=()=>owl(pickOne(OOPS),true);
+let stars=store.get('chr_stars',0);
+function addStars(n){stars+=n; store.set('chr_stars',stars); $('#starN').textContent=stars; const s=$('#stars'); s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');}
+$('#starN').textContent=stars;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function confetti(){
+  if(reduce) return; const c=$('#confetti'), x=c.getContext('2d'); c.width=innerWidth; c.height=innerHeight;
+  const cols=['#3b7cf0','#21a35a','#ee4a3c','#f5940c','#9b51e0','#0fa3a6','#ffc93c'];
+  const ps=Array.from({length:90},()=>({x:Math.random()*c.width,y:-20-Math.random()*c.height*.4,vx:(Math.random()-.5)*4,vy:2+Math.random()*4,r:4+Math.random()*6,a:Math.random()*6,va:(Math.random()-.5)*.3,c:pickOne(cols)}));
+  let t=0; (function f(){t++; x.clearRect(0,0,c.width,c.height); ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.05;p.a+=p.va; x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore();}); if(t<170) requestAnimationFrame(f); else x.clearRect(0,0,c.width,c.height);})();
+}
+function win(n,text){confetti(); addStars(n); owl(text||'Ура! Ты справился! +'+n+' ⭐');}
+
+/* ---------- drag: a solid copy follows the pointer ---------- */
+let DRG=null, noClick=false;
+function pDrag(root,sel,drop){
+  root.addEventListener('pointerdown',e=>{ if(e.button>0) return; const el=e.target.closest(sel); if(!el||!root.contains(el)||el.dataset.fixed) return; if(e.pointerType==='mouse') e.preventDefault(); noClick=false; DRG={el,root,drop,x:e.clientX,y:e.clientY,clone:null}; });
+}
+function dragHover(x,y){ if(!DRG) return; DRG.root.querySelectorAll('.hover').forEach(h=>h.classList.remove('hover')); const t=document.elementFromPoint(x,y), z=t&&t.closest('[data-row],[data-zone]'); if(z&&DRG.root.contains(z)) z.classList.add('hover'); }
+window.addEventListener('pointermove',e=>{ if(!DRG) return;
+  if(!DRG.clone){ if(Math.hypot(e.clientX-DRG.x,e.clientY-DRG.y)<6) return;
+    const r=DRG.el.getBoundingClientRect(), c=DRG.el.cloneNode(true); c.classList.remove('sel','shake'); c.classList.add('dragging');
+    Object.assign(c.style,{position:'fixed',left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px',margin:'0',zIndex:'80',pointerEvents:'none'});
+    document.body.appendChild(c); DRG.clone=c; DRG.ox=DRG.x-r.left; DRG.oy=DRG.y-r.top; DRG.el.classList.add('lifted'); }
+  DRG.clone.style.transform=`translate(${e.clientX-DRG.x}px,${e.clientY-DRG.y}px) rotate(-3deg) scale(1.08)`; if(!DRG.raf){ const x=e.clientX,y=e.clientY; DRG.raf=requestAnimationFrame(()=>{ if(DRG){DRG.raf=0; dragHover(x,y);} }); } e.preventDefault();
+},{passive:false});
+function dragEnd(e,ok){ if(!DRG) return; const d=DRG; DRG=null; if(!d.clone) return;
+  d.clone.remove(); d.el.classList.remove('lifted'); d.root.querySelectorAll('.hover').forEach(h=>h.classList.remove('hover')); noClick=true; setTimeout(()=>{noClick=false;},350);
+  if(ok){ const t=document.elementFromPoint(e.clientX,e.clientY); if(t&&d.root.contains(t)) d.drop(d.el,t); } }
+window.addEventListener('pointerup',e=>dragEnd(e,true)); window.addEventListener('pointercancel',e=>dragEnd(e,false));
+document.addEventListener('click',e=>{ if(noClick){ noClick=false; e.stopPropagation(); e.preventDefault(); } },true);
+document.addEventListener('dragstart',e=>{ if(e.target.closest&&e.target.closest('.pc,.chip')) e.preventDefault(); });
+
+/* ---------- data ---------- */
+const TENSES=[{id:'past',name:'прошедшее',short:'прош. вр.'},{id:'pres',name:'настоящее',short:'наст. вр.'},{id:'fut',name:'будущее',short:'буд. вр.'},{id:'inf',name:'неопр. форма',short:'н. ф.'}];
+const COLOR={noun:'--noun',obj:'--noun',adj:'--adj',attr:'--adj',verb:'--verb',act:'--verb',num:'--num',pron:'--pron',adv:'--adv',prep:'--serv',conj:'--serv',help:'--serv'};
+const EMO={noun:'🧸',obj:'🧸',adj:'🎨',attr:'🎨',verb:'🏃',act:'🏃',num:'🔢',pron:'👉',adv:'🧭',prep:'🔗',conj:'🔗',help:'🔗'};
+const col=id=>`var(${COLOR[id]||'--soft'})`;
+const tint=id=>`var(${COLOR[id]||'--soft'}-l)`;
+const cv=id=>`--c:${col(id)};--cl:${tint(id)}`;
+
+const SCHEMES={
+ '24':{
+  hasTense:true,
+  pos:[
+   {id:'noun',name:'Имя существительное',short:'сущ.',mean:'Обозначает предмет',q:'Кто? Что?',ex:'дом, мама, радость'},
+   {id:'adj',name:'Имя прилагательное',short:'прил.',mean:'Обозначает признак предмета',q:'Какой? Какая? Какое? Какие?',ex:'синий, тёплая, лесное'},
+   {id:'verb',name:'Глагол',short:'гл.',mean:'Обозначает действие предмета',q:'Что делать? Что сделать?',ex:'бежать, читает, нарисовал'},
+   {id:'num',name:'Имя числительное',short:'числ.',mean:'Обозначает количество или порядок при счёте',q:'Сколько? Который?',ex:'пять, второй, десять'},
+   {id:'pron',name:'Местоимение',short:'мест.',mean:'Указывает на предмет, но не называет его',q:'Кто? Что? Чей?',ex:'я, мы, он, они'},
+   {id:'adv',name:'Наречие',short:'нареч.',mean:'Обозначает признак действия',q:'Где? Когда? Как? Куда?',ex:'быстро, вчера, далеко'}
+  ],
+  service:[{id:'prep',name:'Предлог',short:'предл.'},{id:'conj',name:'Союз',short:'союз'}],
+  pool:{
+   noun:['кошка','дерево','учитель','радость','город','книга','солнце','море','ученик','друг','школа','ветер','берёза','облако','тетрадь','лиса','медведь','снег','дорога','праздник','дружба','машина','река','гора','цветок','портфель','птица','поле','мост','сад','озеро','звезда','игрушка','карандаш','доска','урок'],
+   adj:['зелёный','весёлая','длинное','тёплый','смелый','синие','лесная','пушистый','звонкая','высокий','красивая','глубокое','солнечный','быстрая','добрый','холодное','летний','вкусная','мягкий','старые','осенний','яркая','тихий','чистое','дружные','сильный','интересная','золотое'],
+   verb:['бежать:inf','читает:pres','нарисовал:past','поёт:pres','думать:inf','прыгнет:fut','играли:past','напишет:fut','летит:pres','плавать:inf','рисует:pres','гуляли:past','смеяться:inf','построит:fut','шумит:pres','спала:past','расскажет:fut','учить:inf','светит:pres','пели:past','принесёт:fut','помогать:inf','растёт:pres','видел:past','решать:inf','прочитает:fut','слушает:pres'],
+   num:['пять','третий','десять','первый','семь','два','восьмой','сто','девять','одиннадцать','четвёртый','шестой','двадцать','пятнадцатый','три','сороковой','тысяча'],
+   pron:['я','мы','он','они','ты','вы','она','оно','меня','тебе','нас','его','мой','твой','себя','кто'],
+   adv:['быстро','вчера','далеко','весело','завтра','здесь','громко','тихо','сегодня','высоко','там','рядом','вечером','летом','медленно','хорошо','внизу','вверху','часто','никогда','впереди']
+  },
+  tasks:{
+   noun:[
+    {title:'Кто? или Что?',hint:'Живые предметы отвечают на вопрос <b>кто?</b>, неживые — на вопрос <b>что?</b>',cats:[{label:'Кто?',sub:'одушевлённые'},{label:'Что?',sub:'неодушевлённые'}],items:[['мальчик',0],['собака',0],['учитель',0],['птица',0],['рыба',0],['мама',0],['стол',1],['книга',1],['облако',1],['дерево',1],['город',1],['яблоко',1]]},
+    {title:'Какого рода?',hint:'Подставь слово: <b>он, мой</b> — мужской род, <b>она, моя</b> — женский, <b>оно, моё</b> — средний.',cats:[{label:'Мужской род',sub:'он, мой'},{label:'Женский род',sub:'она, моя'},{label:'Средний род',sub:'оно, моё'}],items:[['стол',0],['дом',0],['конь',0],['мяч',0],['лиса',1],['книга',1],['ночь',1],['река',1],['окно',2],['поле',2],['солнце',2],['море',2]]},
+    {title:'Один или много?',hint:'Один предмет — <b>единственное число</b>, много предметов — <b>множественное</b>.',cats:[{label:'Единственное число',sub:'один'},{label:'Множественное число',sub:'много'}],items:[['стол',0],['кошка',0],['яблоко',0],['ёж',0],['книга',0],['дерево',0],['столы',1],['кошки',1],['яблоки',1],['ежи',1],['книги',1],['деревья',1]]},
+    {title:'Собственное или нарицательное?',hint:'Имена, фамилии, клички животных, названия городов и рек — <b>имена собственные</b>. Их пишут <b>с большой буквы</b>.',cats:[{label:'Имена собственные',sub:'с большой буквы'},{label:'Имена нарицательные',sub:'обычные слова'}],items:[['Москва',0],['Волга',0],['Мурзик',0],['Анна',0],['Россия',0],['Байкал',0],['Шарик',0],['Пушкин',0],['Сочи',0],['Урал',0],['Дон',0],['Ваня',0],['город',1],['река',1],['кот',1],['девочка',1],['страна',1],['озеро',1],['собака',1],['поэт',1],['море',1],['горы',1],['мальчик',1],['улица',1]]},
+    {type:'pick',title:'Четвёртый лишний',hint:'Найди слово, которое <b>не является</b> существительным.',qs:[
+      {q:'дом · река · бежать · окно',opts:['дом','река','бежать','окно'],a:2,why:'Бежать — глагол, остальные слова — существительные.'},
+      {q:'радость · смелый · дружба · мечта',opts:['радость','смелый','дружба','мечта'],a:1,why:'Смелый — прилагательное (какой?).'},
+      {q:'лес · поле · быстро · море',opts:['лес','поле','быстро','море'],a:2,why:'Быстро — наречие (как?).'},
+      {q:'мама · папа · сестра · мы',opts:['мама','папа','сестра','мы'],a:3,why:'Мы — местоимение.'},
+      {q:'пять · книга · тетрадь · ручка',opts:['пять','книга','тетрадь','ручка'],a:0,why:'Пять — числительное (сколько?).'}]}
+   ],
+   adj:[
+    {title:'Какой? Какая? Какое? Какие?',hint:'Задай вопрос к слову — так узнаешь род и число прилагательного.',cats:[{label:'Мужской род',sub:'какой?'},{label:'Женский род',sub:'какая?'},{label:'Средний род',sub:'какое?'},{label:'Множественное число',sub:'какие?'}],items:[['красный',0],['высокий',0],['лесной',0],['тёплая',1],['добрая',1],['зимняя',1],['синее',2],['чистое',2],['летнее',2],['весёлые',3],['новые',3],['большие',3]]},
+    {type:'pick',title:'Подбери прилагательное',hint:'Выбери прилагательное, которое подходит к существительному.',qs:[
+      {q:'<span class="gap">?</span> море',opts:['синий','синяя','синее'],a:2,why:'Море (оно, какое?) — синее.'},
+      {q:'<span class="gap">?</span> лиса',opts:['хитрый','хитрая','хитрое'],a:1,why:'Лиса (она, какая?) — хитрая.'},
+      {q:'<span class="gap">?</span> дуб',opts:['высокий','высокая','высокие'],a:0,why:'Дуб (он, какой?) — высокий.'},
+      {q:'<span class="gap">?</span> цветы',opts:['красивый','красивое','красивые'],a:2,why:'Цветы (они, какие?) — красивые.'},
+      {q:'<span class="gap">?</span> ночь',opts:['тёмный','тёмная','тёмное'],a:1,why:'Ночь (она, какая?) — тёмная.'}]},
+    {type:'pick',title:'Слова-противоположности',hint:'Подбери прилагательное с <b>противоположным</b> значением (антоним). Следи, чтобы <b>род</b> совпадал!',qs:[
+      {q:'высокий → <span class="gap">?</span>',opts:['низкий','длинный','большой'],a:0,why:'Высокий — низкий.'},
+      {q:'горячий → <span class="gap">?</span>',opts:['тёплый','холодный','мокрый'],a:1,why:'Горячий — холодный.'},
+      {q:'весёлый → <span class="gap">?</span>',opts:['смешной','добрый','грустный'],a:2,why:'Весёлый — грустный.'},
+      {q:'старый → <span class="gap">?</span>',opts:['новый','большой','крепкий'],a:0,why:'Старый — новый.'},
+      {q:'широкая → <span class="gap">?</span>',opts:['длинная','узкая','узкий'],a:1,why:'Широкая — узкая (женский род).'},
+      {q:'светлое → <span class="gap">?</span>',opts:['тёмная','тёмное','белое'],a:1,why:'Светлое — тёмное (средний род).'}]}
+   ],
+   verb:[
+    {title:'Время глагола',hint:'Когда происходит действие: <b>было</b>, происходит <b>сейчас</b> или <b>будет</b>?',cats:[{label:'Прошедшее время',sub:'что делал? что сделал?'},{label:'Настоящее время',sub:'что делает?'},{label:'Будущее время',sub:'что сделает? что будет делать?'}],items:[['читал',0],['нарисовала',0],['пели',0],['прыгнул',0],['читает',1],['рисую',1],['поём',1],['бежит',1],['будет читать',2],['нарисует',2],['споём',2],['прыгнешь',2]]},
+    {title:'Неопределённая форма',hint:'Неопределённая форма отвечает на вопрос <b>что делать?</b> или <b>что сделать?</b> и оканчивается на <b>-ть, -ти, -чь</b>.',cats:[{label:'Неопределённая форма',sub:'что делать? что сделать?'},{label:'Другая форма',sub:'что делает? что делал?'}],items:[['читать',0],['рисовать',0],['бежать',0],['спеть',0],['написать',0],['нести',0],['читает',1],['рисовал',1],['бежим',1],['споёт',1],['пишут',1],['несла',1]]},
+    {title:'Число глагола',hint:'Действие делает <b>один</b> предмет — единственное число, <b>много</b> предметов — множественное.',cats:[{label:'Единственное число',sub:'он, она — что делает?'},{label:'Множественное число',sub:'они — что делают?'}],items:[['читает',0],['бежит',0],['пел',0],['рисовала',0],['напишет',0],['летит',0],['спит',0],['играл',0],['читают',1],['бегут',1],['пели',1],['рисовали',1],['напишут',1],['летят',1],['спят',1],['играли',1]]},
+    {type:'pick',title:'Вставь глагол',hint:'Выбери глагол в <b>нужном времени</b>. Подсказка — слова «вчера», «сейчас», «завтра».',qs:[
+      {q:'Вчера мы <span class="gap">?</span> в парке.',opts:['гуляем','гуляли','будем гулять'],a:1,why:'Вчера — значит, прошедшее время: гуляли.'},
+      {q:'Завтра я <span class="gap">?</span> письмо.',opts:['написал','пишу','напишу'],a:2,why:'Завтра — будущее время: напишу.'},
+      {q:'Сейчас дети <span class="gap">?</span> песню.',opts:['поют','пели','споют'],a:0,why:'Сейчас — настоящее время: поют.'},
+      {q:'Вчера мама <span class="gap">?</span> пирог.',opts:['испекла','печёт','испечёт'],a:0,why:'Вчера — прошедшее время: испекла.'},
+      {q:'Скоро <span class="gap">?</span> весна.',opts:['пришла','придёт','приходила'],a:1,why:'Скоро — будущее время: придёт.'}]}
+   ],
+   num:[
+    {title:'Сколько? или Который?',hint:'Количественные отвечают на вопрос <b>сколько?</b>, порядковые — <b>который?</b>',cats:[{label:'Количественные',sub:'сколько?'},{label:'Порядковые',sub:'который? какой по счёту?'}],items:[['два',0],['семь',0],['десять',0],['сто',0],['пять',0],['второй',1],['пятый',1],['десятый',1],['первый',1],['седьмой',1]]},
+    {type:'pick',title:'Выбери числительное',hint:'Посмотри на вопрос в скобках.',qs:[
+      {q:'Ваня занял <span class="gap">?</span> место.<small>(какое по счёту?)</small>',opts:['три','третье'],a:1,why:'Какое по счёту? — третье.'},
+      {q:'У меня <span class="gap">?</span> яблока.<small>(сколько?)</small>',opts:['три','третье'],a:0,why:'Сколько? — три.'},
+      {q:'Сегодня <span class="gap">?</span> урок — чтение.<small>(который?)</small>',opts:['пять','пятый'],a:1,why:'Который? — пятый.'},
+      {q:'В классе <span class="gap">?</span> окна.<small>(сколько?)</small>',opts:['четыре','четвёртое'],a:0,why:'Сколько? — четыре.'}]},
+    {type:'pick',title:'Числительное или нет?',hint:'Числительное отвечает на вопрос <b>сколько?</b> или <b>который?</b> А «пятёрка», «десяток», «сотня» — это существительные!',qs:[
+      {q:'Какое слово — числительное?',opts:['пятёрка','пять','пятак'],a:1,why:'Пять (сколько?) — числительное. Пятёрка — существительное.'},
+      {q:'Какое слово — числительное?',opts:['десяток','десятый','десятка'],a:1,why:'Десятый (который?) — порядковое числительное.'},
+      {q:'Какое слово — числительное?',opts:['тройка','утроить','три'],a:2,why:'Три (сколько?) — числительное.'},
+      {q:'Какое слово — числительное?',opts:['сотня','сто','сотка'],a:1,why:'Сто (сколько?) — числительное.'},
+      {q:'Какое слово — числительное?',opts:['первоклассник','первый','первенец'],a:1,why:'Первый (который?) — порядковое числительное.'}]}
+   ],
+   pron:[
+    {title:'Какое лицо?',hint:'1-е лицо — тот, кто говорит. 2-е — тот, с кем говорят. 3-е — тот, о ком говорят.',cats:[{label:'1-е лицо',sub:'я говорю'},{label:'2-е лицо',sub:'говорю тебе'},{label:'3-е лицо',sub:'говорю о нём'}],items:[['я',0],['мы',0],['ты',1],['вы',1],['он',2],['она',2],['оно',2],['они',2]]},
+    {title:'Один или много?',hint:'Личные местоимения бывают <b>единственного</b> и <b>множественного</b> числа.',cats:[{label:'Единственное число',sub:'один'},{label:'Множественное число',sub:'много'}],items:[['я',0],['ты',0],['он',0],['она',0],['оно',0],['мы',1],['вы',1],['они',1]]},
+    {type:'pick',title:'Замени местоимением',hint:'Каким местоимением можно заменить выделенное слово?',qs:[
+      {q:'<b>Маша</b> читает. → <span class="gap">?</span> читает.',opts:['он','она','оно','они'],a:1,why:'Маша — она.'},
+      {q:'<b>Солнце</b> светит. → <span class="gap">?</span> светит.',opts:['он','она','оно','они'],a:2,why:'Солнце — оно.'},
+      {q:'<b>Дети</b> играют. → <span class="gap">?</span> играют.',opts:['он','она','оно','они'],a:3,why:'Дети — они.'},
+      {q:'<b>Петя</b> рисует. → <span class="gap">?</span> рисует.',opts:['он','она','оно','они'],a:0,why:'Петя — он.'}]}
+   ],
+   adv:[
+    {title:'Где? Когда? Как?',hint:'Задай вопрос от глагола к наречию: бежит (как?) быстро.',cats:[{label:'Где? Куда?',sub:'место'},{label:'Когда?',sub:'время'},{label:'Как?',sub:'как делает'}],items:[['дома',0],['далеко',0],['здесь',0],['рядом',0],['вчера',1],['утром',1],['скоро',1],['зимой',1],['быстро',2],['громко',2],['весело',2],['тихо',2]]},
+    {type:'pick',title:'Найди наречие',hint:'Наречие обозначает признак <b>действия</b> и не изменяется.',qs:[
+      {q:'Заяц бежит <span class="gap">?</span>.<small>(как?)</small>',opts:['быстрый','быстро','быстрота'],a:1,why:'Бежит как? — быстро.'},
+      {q:'Мы пришли <span class="gap">?</span>.<small>(когда?)</small>',opts:['вчерашний','день','вчера'],a:2,why:'Пришли когда? — вчера.'},
+      {q:'Птицы улетели <span class="gap">?</span>.<small>(куда?)</small>',opts:['далеко','далёкий','даль'],a:0,why:'Улетели куда? — далеко.'},
+      {q:'Ребята поют <span class="gap">?</span>.<small>(как?)</small>',opts:['весёлые','весело','веселье'],a:1,why:'Поют как? — весело.'}]},
+    {type:'pick',title:'Наоборот',hint:'Подбери наречие с <b>противоположным</b> значением.',qs:[
+      {q:'быстро → <span class="gap">?</span>',opts:['медленно','скоро','весело'],a:0,why:'Быстро — медленно.'},
+      {q:'далеко → <span class="gap">?</span>',opts:['высоко','близко','долго'],a:1,why:'Далеко — близко.'},
+      {q:'громко → <span class="gap">?</span>',opts:['звонко','тихо','весело'],a:1,why:'Громко — тихо.'},
+      {q:'вверху → <span class="gap">?</span>',opts:['внизу','вперёд','рядом'],a:0,why:'Вверху — внизу.'},
+      {q:'рано → <span class="gap">?</span>',opts:['утром','поздно','сегодня'],a:1,why:'Рано — поздно.'},
+      {q:'хорошо → <span class="gap">?</span>',opts:['плохо','отлично','красиво'],a:0,why:'Хорошо — плохо.'}]}
+   ]
+  },
+  sentences:[
+   {title:'Предложение 1',text:'Весёлые|adj дети|noun быстро|adv бегут|verb.pres по|prep зелёной|adj траве.|noun'},
+   {title:'Предложение 2',text:'Вчера|adv мы|pron видели|verb.past в|prep лесу|noun трёх|num ёжиков.|noun'},
+   {title:'Предложение 3',text:'Скоро|adv наступит|verb.fut холодная|adj зима.|noun'},
+   {title:'Предложение 4',text:'Мама|noun испекла|verb.past вкусный|adj пирог|noun и|conj позвала|verb.past нас.|pron'},
+   {title:'Предложение 5',text:'Первый|num снег|noun тихо|adv падает|verb.pres на|prep землю.|noun'},
+   {title:'Текст «Осень»',text:'Наступила|verb.past осень.|noun Жёлтые|adj листья|noun кружатся|verb.pres в|prep воздухе.|noun Скоро|adv птицы|noun улетят|verb.fut на|prep юг.|noun'},
+   {title:'Предложение 6',text:'Ребята|noun весело|adv катаются|verb.pres на|prep новых|adj санках.|noun'},
+   {title:'Предложение 7',text:'Завтра|adv мы|pron пойдём|verb.fut в|prep школу.|noun'},
+   {title:'Предложение 8',text:'Два|num весёлых|adj щенка|noun громко|adv лаяли.|verb.past'},
+   {title:'Предложение 9',text:'Высокие|adj сосны|noun тихо|adv шумят|verb.pres над|prep рекой.|noun'},
+   {title:'Предложение 10',text:'Она|pron прочитает|verb.fut интересную|adj книгу|noun завтра.|adv'},
+   {title:'Текст «Котята»',text:'У|prep Маши|noun два|num котёнка.|noun Они|pron весело|adv играют|verb.pres с|prep клубком.|noun Завтра|adv мы|pron купим|verb.fut им|pron мячик.|noun'},
+   {title:'Текст «Весна»',text:'Пришла|verb.past весна.|noun Ярко|adv светит|verb.pres тёплое|adj солнце.|noun Скоро|adv прилетят|verb.fut первые|num птицы.|noun Мы|pron повесим|verb.fut для|prep них|pron скворечник.|noun'}
+  ],
+  ownDefault:'ручка, писать, синий, два, мы, легко, прыгнул, споёт'
+ },
+ '1':{
+  hasTense:false,
+  pos:[
+   {id:'obj',name:'Слова-предметы',short:'предм.',mean:'Называют предметы',q:'Кто? Что?',ex:'мама, мяч, кот'},
+   {id:'attr',name:'Слова-признаки',short:'призн.',mean:'Называют признаки предметов',q:'Какой? Какая? Какое? Какие?',ex:'красный, мягкая'},
+   {id:'act',name:'Слова-действия',short:'действ.',mean:'Называют действия предметов',q:'Что делает? Что делать?',ex:'бежит, поёт, спит'}
+  ],
+  service:[{id:'help',name:'Слова-помощники',short:'помощн.'}],
+  pool:{
+   obj:['мама','мяч','кот','школа','дом','ёжик','река','птица','книга','заяц','кукла','папа','собака','стол','лес','машина','цветок','яблоко','белка','солнце','ручка','девочка','мальчик','окно','рыбка','снег','бабушка','гриб'],
+   attr:['красный','большая','мягкое','синий','добрый','холодная','весёлые','рыжий','круглый','зелёная','маленький','длинный','сладкое','белый','тёплая','высокое','пушистый','новая','жёлтые','смешной','быстрый','вкусная'],
+   act:['бежит','читает','плывёт','рисует','поёт','спит','летит','прыгает','мяукает','играет','пишет','растёт','светит','лает','гуляет','ест','смеётся','думает','несёт','плачет','стучит','идёт']
+  },
+  tasks:{
+   obj:[
+    {title:'Кто? или Что?',hint:'Про живое спрашиваем <b>кто?</b>, про неживое — <b>что?</b>',cats:[{label:'Кто?',sub:'живое'},{label:'Что?',sub:'неживое'}],items:[['мама',0],['кот',0],['ёжик',0],['птица',0],['мальчик',0],['рыбка',0],['мяч',1],['дом',1],['книга',1],['стол',1],['река',1],['машина',1]]},
+    {title:'Один или много?',hint:'Посмотри на слово: здесь один предмет или много?',cats:[{label:'Один',sub:'мяч'},{label:'Много',sub:'мячи'}],items:[['кот',0],['дом',0],['книга',0],['птица',0],['ёжик',0],['коты',1],['дома',1],['книги',1],['птицы',1],['ёжики',1]]},
+    {title:'С большой буквы!',hint:'Имена людей, клички животных и названия городов пишем <b>с большой буквы</b>.',cats:[{label:'Имя, кличка, город',sub:'с большой буквы'},{label:'Просто предмет',sub:'с маленькой буквы'}],items:[['Маша',0],['Мурзик',0],['Шарик',0],['Москва',0],['Петя',0],['Бурёнка',0],['девочка',1],['кот',1],['собака',1],['город',1],['мальчик',1],['корова',1]]},
+    {type:'pick',title:'Лишнее слово',hint:'Найди слово, которое <b>не</b> называет предмет.',qs:[
+      {q:'мама · папа · бежит · сын',opts:['мама','папа','бежит','сын'],a:2,why:'Бежит — слово-действие.'},
+      {q:'мяч · кукла · красный · машина',opts:['мяч','кукла','красный','машина'],a:2,why:'Красный — слово-признак.'},
+      {q:'кот · спит · заяц · ёжик',opts:['кот','спит','заяц','ёжик'],a:1,why:'Спит — слово-действие.'},
+      {q:'река · лес · поле · весёлый',opts:['река','лес','поле','весёлый'],a:3,why:'Весёлый — слово-признак.'}]}
+   ],
+   attr:[
+    {title:'Какой? Какая? Какое? Какие?',hint:'Задай вопрос к слову-признаку.',cats:[{label:'Какой?',sub:'мяч'},{label:'Какая?',sub:'кукла'},{label:'Какое?',sub:'солнце'},{label:'Какие?',sub:'шары'}],items:[['красный',0],['большой',0],['весёлый',0],['синяя',1],['мягкая',1],['добрая',1],['тёплое',2],['яркое',2],['круглое',2],['белые',3],['новые',3],['высокие',3]]},
+    {type:'pick',title:'Подбери слово-признак',hint:'Какое слово подходит к предмету?',qs:[
+      {q:'<span class="gap">?</span> мяч',opts:['красный','красная','красное'],a:0,why:'Мяч какой? — красный.'},
+      {q:'<span class="gap">?</span> кукла',opts:['новый','новая','новое'],a:1,why:'Кукла какая? — новая.'},
+      {q:'<span class="gap">?</span> солнце',opts:['яркий','яркая','яркое'],a:2,why:'Солнце какое? — яркое.'},
+      {q:'<span class="gap">?</span> шары',opts:['большой','большая','большие'],a:2,why:'Шары какие? — большие.'},
+      {q:'<span class="gap">?</span> ёжик',opts:['колючий','колючая','колючие'],a:0,why:'Ёжик какой? — колючий.'}]},
+    {type:'pick',title:'Наоборот',hint:'Подбери слово-признак <b>наоборот</b>.',qs:[
+      {q:'большой → <span class="gap">?</span>',opts:['маленький','круглый','высокий'],a:0,why:'Большой — маленький.'},
+      {q:'холодный → <span class="gap">?</span>',opts:['белый','горячий','мокрый'],a:1,why:'Холодный — горячий.'},
+      {q:'весёлый → <span class="gap">?</span>',opts:['грустный','смешной','добрый'],a:0,why:'Весёлый — грустный.'},
+      {q:'длинный → <span class="gap">?</span>',opts:['толстый','короткий','новый'],a:1,why:'Длинный — короткий.'},
+      {q:'сладкий → <span class="gap">?</span>',opts:['вкусный','горький','спелый'],a:1,why:'Сладкий — горький.'}]}
+   ],
+   act:[
+    {title:'Было, сейчас или будет?',hint:'Подумай, когда происходит действие.',cats:[{label:'Было',sub:'что делал?'},{label:'Сейчас',sub:'что делает?'},{label:'Будет',sub:'что сделает?'}],items:[['бежал',0],['рисовал',0],['пел',0],['играл',0],['бежит',1],['рисует',1],['поёт',1],['играет',1],['побежит',2],['нарисует',2],['споёт',2],['поиграет',2]]},
+    {title:'Один или много?',hint:'Что делает? — один. Что делают? — много.',cats:[{label:'Что делает?',sub:'один'},{label:'Что делают?',sub:'много'}],items:[['читает',0],['летит',0],['плывёт',0],['спит',0],['читают',1],['летят',1],['плывут',1],['спят',1]]},
+    {type:'pick',title:'Что делает?',hint:'Выбери слово-действие.',qs:[
+      {q:'Птица <span class="gap">?</span>',opts:['крылья','летит','быстрая'],a:1,why:'Птица что делает? — летит.'},
+      {q:'Рыбка <span class="gap">?</span>',opts:['плавает','река','золотая'],a:0,why:'Рыбка что делает? — плавает.'},
+      {q:'Солнце <span class="gap">?</span>',opts:['лучи','яркое','светит'],a:2,why:'Солнце что делает? — светит.'},
+      {q:'Кошка <span class="gap">?</span>',opts:['мягкая','мяукает','хвост'],a:1,why:'Кошка что делает? — мяукает.'}]}
+   ]
+  },
+  sentences:[
+   {title:'Предложение 1',text:'Рыжая|attr лиса|obj бежит|act по|help лесу.|obj'},
+   {title:'Предложение 2',text:'Маленький|attr котёнок|obj пьёт|act молоко.|obj'},
+   {title:'Предложение 3',text:'Яркое|attr солнце|obj светит.|act'},
+   {title:'Предложение 4',text:'Белка|obj грызёт|act орешки.|obj'},
+   {title:'Предложение 5',text:'Весёлые|attr дети|obj играют|act в|help мяч.|obj'},
+   {title:'Предложение 6',text:'Серый|attr зайчик|obj прыгает.|act'},
+   {title:'Предложение 7',text:'Мальчик|obj читает|act интересную|attr книгу.|obj'},
+   {title:'Предложение 8',text:'Маленькая|attr птичка|obj поёт|act песенку.|obj'},
+   {title:'Предложение 9',text:'Мама|obj печёт|act вкусные|attr пирожки.|obj'},
+   {title:'Текст «Лето»',text:'Наступило|act лето.|obj Дети|obj купаются|act в|help тёплой|attr речке.|obj'},
+   {title:'Текст «Зима»',text:'Пришла|act зима.|obj Белый|attr снег|obj укрыл|act землю.|obj Дети|obj катаются|act на|help санках.|obj'}
+  ],
+  ownDefault:'мяч, прыгает, круглый, кошка, спит, рыжая'
+ }
+};
+
+function buildDict(S){
+  const d={};
+  const add=(w,pos,tense)=>{const k=norm(w); if(k && !d[k]) d[k]={pos,tense};};
+  for(const p in S.pool) S.pool[p].forEach(x=>{const [w,t]=x.split(':'); add(w,p,t);});
+  S.sentences.forEach(s=>s.text.split(/\s+/).forEach(t=>{const [w,tag]=t.split('|'); if(tag){const [p,te]=tag.split('.'); add(w,p,te);}}));
+  const tensesFor={'Время глагола':['past','pres','fut'],'Неопределённая форма':['inf',null]};
+  for(const p in S.tasks) S.tasks[p].forEach(t=>{ if(t.type==='pick') return; const tl=S.hasTense&&p==='verb'?tensesFor[t.title]:null;
+    t.items.forEach(([w,i])=>add(w,p,tl?tl[i]||undefined:undefined)); });
+  return d;
+}
+/* more words for sorting tasks */
+const TASK_EXTRA={"24": {"noun/Кто? или Что?": [["мальчик", "собака", "учитель", "птица", "рыба", "мама", "врач", "ёжик", "бабочка", "девочка", "доктор", "конь", "кот", "медведь", "ученик", "лётчик"], ["стол", "книга", "облако", "дерево", "город", "яблоко", "окно", "река", "гора", "тетрадь", "солнце", "мяч", "дом", "цветок", "машина", "ручка"]], "noun/Какого рода?": [["стол", "дом", "конь", "мяч", "город", "лес", "снег", "друг", "ветер", "карандаш"], ["лиса", "книга", "ночь", "река", "школа", "мышь", "дорога", "тетрадь", "зима", "берёза"], ["окно", "поле", "солнце", "море", "озеро", "небо", "яблоко", "дерево", "облако", "письмо"]], "noun/Один или много?": [["стол", "кошка", "яблоко", "ёж", "книга", "дерево", "окно", "гора", "друг", "цветок"], ["столы", "кошки", "яблоки", "ежи", "книги", "деревья", "окна", "горы", "друзья", "цветы"]], "adj/Какой? Какая? Какое? Какие?": [["красный", "высокий", "лесной", "добрый", "синий", "большой", "зимний"], ["тёплая", "добрая", "зимняя", "красивая", "быстрая", "новая", "лесная"], ["синее", "чистое", "летнее", "яркое", "голубое", "вкусное", "высокое"], ["весёлые", "новые", "большие", "белые", "зелёные", "лесные", "смелые"]], "verb/Время глагола": [["читал", "нарисовала", "пели", "прыгнул", "писал", "гуляли", "смеялась", "построил"], ["читает", "рисую", "поём", "бежит", "пишет", "гуляем", "смеётся", "строит"], ["будет читать", "нарисует", "споём", "прыгнешь", "напишет", "погуляем", "засмеётся", "будет строить"]], "verb/Неопределённая форма": [["читать", "рисовать", "бежать", "спеть", "написать", "нести", "беречь", "сидеть", "думать", "прыгнуть"], ["читает", "рисовал", "бежим", "споёт", "пишут", "несла", "бережёт", "сидел", "думаем", "прыгает"]], "num/Сколько? или Который?": [["два", "семь", "десять", "сто", "пять", "три", "девять", "двадцать", "одиннадцать", "восемь"], ["второй", "пятый", "десятый", "первый", "седьмой", "третий", "девятый", "двадцатый", "одиннадцатый", "восьмой"]], "pron/Какое лицо?": [["я", "мы", "меня", "нас", "мне", "нам"], ["ты", "вы", "тебя", "вас", "тебе", "вам"], ["он", "она", "оно", "они", "его", "её", "их", "ему"]], "adv/Где? Когда? Как?": [["дома", "далеко", "здесь", "рядом", "там", "внизу", "вверху", "впереди"], ["вчера", "утром", "скоро", "зимой", "сегодня", "завтра", "вечером", "летом"], ["быстро", "громко", "весело", "тихо", "медленно", "хорошо", "смешно", "ярко"]]}, "1": {"obj/Кто? или Что?": [["мама", "кот", "ёжик", "птица", "мальчик", "рыбка", "папа", "собака", "заяц", "девочка", "белка", "лиса"], ["мяч", "дом", "книга", "стол", "река", "машина", "окно", "цветок", "яблоко", "ручка", "гриб", "снег"]], "obj/Один или много?": [["кот", "дом", "книга", "птица", "ёжик", "мяч", "гриб", "лиса", "машина", "цветок"], ["коты", "дома", "книги", "птицы", "ёжики", "мячи", "грибы", "лисы", "машины", "цветы"]], "attr/Какой? Какая? Какое? Какие?": [["красный", "большой", "весёлый", "рыжий", "круглый", "синий", "длинный"], ["синяя", "мягкая", "добрая", "новая", "белая", "быстрая", "сладкая"], ["тёплое", "яркое", "круглое", "большое", "зелёное", "вкусное", "белое"], ["белые", "новые", "высокие", "красные", "маленькие", "весёлые", "сладкие"]], "act/Было, сейчас или будет?": [["бежал", "рисовал", "пел", "играл", "читал", "прыгал", "гулял", "спал"], ["бежит", "рисует", "поёт", "играет", "читает", "прыгает", "гуляет", "спит"], ["побежит", "нарисует", "споёт", "поиграет", "прочитает", "прыгнет", "погуляет", "поспит"]], "act/Один или много?": [["читает", "летит", "плывёт", "спит", "поёт", "бежит", "идёт", "рисует"], ["читают", "летят", "плывут", "спят", "поют", "бегут", "идут", "рисуют"]]}};
+for(const g in TASK_EXTRA) for(const key in TASK_EXTRA[g]){ const [pos,title]=key.split('/'); const t=(SCHEMES[g].tasks[pos]||[]).find(x=>x.title===title); if(!t) continue;
+  const have=new Set(t.items.map(x=>x[0])); TASK_EXTRA[g][key].forEach((ws,i)=>ws.forEach(w=>{ if(!have.has(w)){ have.add(w); t.items.push([w,i]); } })); }
+for(const g in SCHEMES) SCHEMES[g].dict=buildDict(SCHEMES[g]);
+
+let grade=store.get('chr_grade','24');
+const S=()=>SCHEMES[grade];
+const ACT_KEY=()=>'chr_act_'+grade;
+function ACT(){ const ids=S().pos.map(p=>p.id); let a=store.get(ACT_KEY(),ids).filter(x=>ids.includes(x)); if(!a.length) a=ids; return new Set(a); }
+const actPos=()=>S().pos.filter(p=>ACT().has(p.id));
+const allPos=()=>actPos().concat(S().service);
+function renderPosFilter(){
+  const a=ACT();
+  $('#posFilter').innerHTML=`<span class="pf-l">${grade==='1'?'Группы слов:':'Части речи:'}</span>`+S().pos.map(p=>`<button type="button" class="pf ${a.has(p.id)?'on':''}" data-pf="${p.id}" style="--c:${col(p.id)}" aria-pressed="${a.has(p.id)}">${a.has(p.id)?'✓ ':''}${p.short==='предм.'?'предметы':p.short==='призн.'?'признаки':p.short==='действ.'?'действия':p.short}</button>`).join('');
+}
+const posById=id=>allPos().find(p=>p.id===id);
+const tenseById=id=>TENSES.find(t=>t.id===id);
+
+/* date in words */
+(function(){
+  const o=['первое','второе','третье','четвёртое','пятое','шестое','седьмое','восьмое','девятое','десятое','одиннадцатое','двенадцатое','тринадцатое','четырнадцатое','пятнадцатое','шестнадцатое','семнадцатое','восемнадцатое','девятнадцатое','двадцатое'];
+  const m=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  const dt=new Date(), d=dt.getDate();
+  let w=d<=20?o[d-1]:d<30?'двадцать '+o[d-21]:d===30?'тридцатое':'тридцать первое';
+  w=w[0].toUpperCase()+w.slice(1);
+  $('#dateline').innerHTML=`${w} ${m[dt.getMonth()]}<small>Классная работа</small>`;
+})();
+
+/* ---------- sorting board ---------- */
+function Sort(root,cfg){
+  let items=cfg.items.map((it,i)=>({id:i,w:it.w,key:it.key,cls:it.cls||'',at:null,mark:null}));
+  let sel=null, mist=0, msg='', won=false;
+  const zoneColor={}; cfg.buckets.forEach(b=>{zoneColor[b.key]=b.color; (b.zones||[]).forEach(z=>zoneColor[z.key]=b.color);});
+  const chip=i=>`<span class="chip ${i.cls||''} ${sel===i.id?'sel':''} ${i.mark||''}" tabindex="0" role="button" data-id="${i.id}" ${cfg.check&&i.at!==null&&i.key!=null?'data-fixed="1"':''} style="${i.at?`--c:${zoneColor[i.at]}`:''}">${esc(i.w)}</span>`;
+  const inZone=k=>items.filter(i=>i.at===k).map(chip).join('');
+  function render(flash){
+    const tray=items.filter(i=>i.at===null);
+    const placed=items.length-tray.length;
+    let status='';
+    if(cfg.check){
+      status = tray.length===0 && items.length ? `<span class="done-note">🎉 Всё разложено!</span> <span class="status">Ошибок: <span class="${mist?'bad':'good'}">${mist}</span></span>`
+        : `<span class="status">Разложено: ${placed} из ${items.length} · ошибок: <span class="${mist?'bad':'good'}">${mist}</span></span>`;
+    } else status=`<span class="status">${msg}</span>`;
+    const trayHtml=`<div class="tray" data-zone="__tray">${tray.length?tray.map(chip).join(''):`<span class="empty">${items.length?'Всё разложено 👍':'Слов пока нет — впиши свои слова выше'}</span>`}</div>`;
+    root.innerHTML=`
+      ${cfg.trayLast?'':trayHtml}
+      <div class="buckets">${cfg.buckets.map(b=>{
+        const head=`<div class="bhead"><b>${b.label}</b>${b.sub||b.emo?`<span>${b.emo?`<i class="e">${b.emo}</i> `:''}${b.sub||''}</span>`:''}</div>`;
+        return b.zones
+        ? `<div class="bucket" style="--c:${b.color};--cl:${b.tint||'var(--soft-l)'}">${head}<div class="zones">${b.zones.map(z=>`<div class="zone sub" tabindex="0" data-zone="${z.key}"><span class="zl">${z.label}</span><div class="zitems">${inZone(z.key)}</div></div>`).join('')}</div></div>`
+        : `<div class="bucket zone" tabindex="0" data-zone="${b.key}" style="--c:${b.color};--cl:${b.tint||'var(--soft-l)'}">${head}<div class="zitems">${inZone(b.key)}</div></div>`;
+      }).join('')}</div>
+      ${cfg.trayLast?`<div style="margin-top:16px">${trayHtml}</div>`:''}
+      <div class="bar">${status}</div>`;
+    if(flash!=null){const el=root.querySelector(`.chip[data-id="${flash}"]`); if(el) el.classList.add('shake');}
+  }
+  function place(id,key){
+    const it=items[id]; if(!it) return;
+    if(key==='__tray'){ if(!cfg.check){it.at=null; it.mark=null;} sel=null; render(); return; }
+    if(cfg.check && it.key==null){
+      const d=cfg.dictCheck?(S().dict[norm(it.w)]||guess(it.w)):null, p=key.split('.')[0];
+      if(d && p!==d.pos && !d.soft){ mist++; sel=null; render(id); oops(); return; }
+      it.at=key; it.mark=d&&p===d.pos?'ok':'unk'; sel=null; render();
+      if(!won && items.every(i=>i.at!==null)){ won=true; win(3); } return;
+    }
+    if(cfg.check && it.key!=null){
+      if([].concat(it.key).includes(key)){ it.at=key; sel=null; render();
+        if(!won && items.every(i=>i.at!==null)){ won=true; win(mist===0?5:3, mist===0?'Без ошибок! +5 ⭐':'Молодец! +3 ⭐'); }
+        else if(Math.random()<.35) praise(); }
+      else { mist++; sel=null; render(id); oops(); }
+    } else { it.at=key; it.mark=null; sel=null; msg=''; render(); }
+  }
+  root.onclick=e=>{
+    const c=e.target.closest('.chip');
+    if(c){ const id=+c.dataset.id, it=items[id];
+      if(cfg.check && it.at!==null && it.key!=null) return;
+      sel = sel===id?null:id; render(); return; }
+    const z=e.target.closest('[data-zone]');
+    if(z && sel!=null) place(sel,z.dataset.zone);
+  };
+  root.onkeydown=e=>{ if((e.key==='Enter'||e.key===' ') && e.target.matches('.chip,[data-zone]')){ e.preventDefault(); e.target.click(); } };
+  pDrag(root,'.chip',(el,t)=>{ const it=items[+el.dataset.id]; if(!it||(cfg.check&&it.at!==null&&it.key!=null)) return; const z=t.closest('[data-zone]'); if(z) place(it.id,z.dataset.zone); });
+  render();
+  return {
+    add(words){ words.forEach(w=>items.push({id:items.length,w,key:null,cls:'own',at:null,mark:null})); msg=''; won=false; render(); },
+    clear(){ items=[]; sel=null; msg=''; render(); },
+    check(dict,hasTense){
+      let ok=0,bad=0,unk=0,left=0;
+      items.forEach(i=>{
+        if(i.at===null){i.mark=null; left++; return;}
+        const d=dict[norm(i.w)]||guess(i.w);
+        if(!d){i.mark='unk'; unk++; return;}
+        const [p,t]=i.at.split('.');
+        const good = p===d.pos && (!hasTense || p!=='verb' || !d.tense || !t || t===d.tense);
+        if(!good && d.soft){i.mark='unk'; unk++; return;}
+        i.mark=good?'ok':'badm'; good?ok++:bad++;
+      });
+      msg=`Верно: <span class="good">${ok}</span> · ошибок: <span class="bad">${bad}</span>${unk?` · «?» — ${unk} сл. проверит учитель`:''}${left?` · не разложено: ${left}`:''}`;
+      render();
+      if(ok && !bad && !left){ win(Math.min(5,ok)); } else if(bad) oops(); else if(ok) praise();
+    }
+  };
+}
+/* rough guess by ending for words outside the dictionary (soft = not sure) */
+function guess(w){
+  const x=norm(w); if(x.length<3) return null; const one=grade==='1';
+  if(/^(будет|буду|будем|будешь|будете|будут) /.test(x)) return {pos:one?'act':'verb',tense:'fut',soft:true};
+  if(/(ться|тся|ть|ти|чь)$/.test(x)) return {pos:one?'act':'verb',tense:'inf',soft:true};
+  if(/(ый|ий|ой|ая|яя|ое|ее|ые|ие)$/.test(x) && x.length>3) return {pos:one?'attr':'adj',soft:true};
+  return null;
+}
+
+/* ---------- multiple choice ---------- */
+function Pick(root,qs,color,doneCb){
+  let i=0, mist=0, locked=false, wrong=new Set();
+  const order=shuffle(qs).map(q=>{const idx=shuffle(q.opts.map((_,k)=>k)); return {...q,opts:idx.map(k=>q.opts[k]),a:idx.indexOf(q.a)};});
+  function render(){
+    if(i>=order.length){
+      root.innerHTML=`<div class="qcard finish" style="${color}"><div class="bigstar">${mist===0?'🏆':'⭐'}</div><h3 class="tt">${mist===0?'Ни одной ошибки!':'Задание выполнено!'}</h3><p>Ошибок: <b class="${mist?'bad':'good'}">${mist}</b></p><button type="button" class="btn primary" data-again>Ещё раз</button></div>`;
+      return;
+    }
+    const q=order[i];
+    root.innerHTML=`<div class="qcard" style="${color}">
+      <div class="qprog">${order.map((_,k)=>`<i class="${k<i?'d':k===i?'c':''}"></i>`).join('')}</div>
+      <div class="qtext">${q.q}</div>
+      <div class="opts">${q.opts.map((o,k)=>`<button type="button" class="opt ${wrong.has(k)?'wrong':''}" data-o="${k}" ${wrong.has(k)?'disabled':''}>${esc(o)}</button>`).join('')}</div>
+      <div class="why" id="why"></div></div>`;
+  }
+  root.onclick=e=>{
+    if(e.target.closest('[data-again]')){ i=0; mist=0; wrong=new Set(); render(); return; }
+    const b=e.target.closest('[data-o]'); if(!b||locked) return;
+    const k=+b.dataset.o, q=order[i];
+    if(k===q.a){ locked=true; b.classList.add('right'); $('#why',root).textContent='✓ '+(q.why||''); praise();
+      const gap=root.querySelector('.gap'); if(gap) gap.textContent=q.opts[k];
+      setTimeout(()=>{ i++; locked=false; wrong=new Set(); render(); if(i>=order.length){ win(mist===0?5:3); doneCb&&doneCb(); } },1300);
+    } else { mist++; wrong.add(k); b.classList.add('wrong','shake'); b.disabled=true; oops(); }
+  };
+  render();
+}
+
+/* ---------- 1. puzzle chain: name → meaning → questions ---------- */
+const CARDS24={noun:{m:'предмет',q:['Кто?','Что?']},adj:{m:'признак предмета',q:['Какой?','Какая?','Какое?','Какие?']},verb:{m:'действие предмета',q:['Что делать?','Что сделать?']},num:{m:'количество или порядок предметов при счёте',q:['Сколько?','Который?']},pron:{m:'указывает на предмет, но не называет его',q:['Кто?','Что?','Чей?']},adv:{m:'признак действия',q:['Где?','Когда?','Как?','Куда?']}};
+const CARDS1={obj:{m:'предмет',q:['Кто?','Что?']},attr:{m:'признак предмета',q:['Какой?','Какая?','Какое?','Какие?']},act:{m:'действие предмета',q:['Что делает?','Что делать?']}};
+const CARDS=()=>grade==='1'?CARDS1:CARDS24;
+/* piece shapes: arrow chain via one cheap clip-path polygon (old gradient masks were slow on boards) */
+const pcCls=(L,R)=>(L?'':' nol')+(R?'':' nor');
+const PZ={pieces:[],sel:null,mist:0,won:false};
+function resetPuzzle(){
+  const C=CARDS(), items=[];
+  const A=ACT();
+  actPos().forEach(p=>{const c=C[p.id]; if(!c) return;
+    items.push({w:c.m,kind:'m',key:[p.id]});
+    c.q.forEach(w=>items.push({w,kind:'q',key:(grade!=='1'&&(w==='Кто?'||w==='Что?'))?['noun','pron'].filter(x=>A.has(x)):[p.id]}));});
+  PZ.pieces=shuffle(items).map((x,i)=>({...x,id:i,at:null})); PZ.sel=null; PZ.mist=0; PZ.won=false;
+}
+const slotsOf=pos=>1+CARDS()[pos].q.length;
+const inSlot=(pos,j)=>PZ.pieces.find(x=>x.at===pos+'|'+j);
+const rowFull=pos=>{for(let j=0;j<slotsOf(pos);j++) if(!inSlot(pos,j)) return false; return true;};
+function renderMatch(flash){
+  const root=$('#s-match'), C=CARDS(), P=actPos().filter(p=>C[p.id]);
+  const total=PZ.pieces.length, placed=PZ.pieces.filter(x=>x.at).length;
+  const trayM=PZ.pieces.filter(x=>!x.at&&x.kind==='m'), trayQ=PZ.pieces.filter(x=>!x.at&&x.kind==='q');
+  const trayPiece=x=>`<span class="pc ${x.kind==='m'?'pm':'pq'} ${PZ.sel===x.id?'sel':''}" tabindex="0" role="button" data-pc="${x.id}">${esc(x.w)}</span>`;
+  root.innerHTML=`<div class="shead"><h2>🧩 Собери пазл</h2>
+      <div class="legend1"><span class="lg lg-h">${grade==='1'?'группа слов':'часть речи'}</span><span class="arr">→</span><span class="lg lg-m">${grade==='1'?'что называют':'что обозначает'}</span><span class="arr">→</span><span class="lg lg-q">на какие вопросы отвечает</span></div>
+      <span class="sp"></span>
+      ${placed===total?'<span class="done-note">🎉 Все пазлы собраны!</span>':`<span class="status">На месте: <b>${placed}</b> из ${total} · ошибок: <b class="${PZ.mist?'bad':'good'}">${PZ.mist}</b></span>`}
+      <button type="button" class="btn primary" id="pzAgain">🔄 Заново</button></div>
+    <div class="pzs" style="--n:${P.length}">${P.map((p,pi)=>{
+      // block like a paper jigsaw: name on top, meaning below, questions two per row; pieces lock with round knobs
+      const n=C[p.id].q.length, full=rowFull(p.id), rows=Math.ceil(n/2);
+      const cell=(j,cls)=>{ const x=inSlot(p.id,j), kind=j===0?'m':'q';
+        const plate=j===0?(grade==='1'?'что называют':'обозначает'):(n>1?'вопрос '+j:'вопрос');
+        return x?`<div class="pc ${kind==='m'?'pm':'pq'} placed${cls}">${esc(x.w)}</div>`
+                :`<div class="pc ghost${cls}" data-slot="${p.id}|${j}" tabindex="0" role="button" aria-label="${plate}">?</div>`; };
+      let h=`<div class="pc head wide kb"><span class="e">${EMO[p.id]}</span>${p.name}${full?' ✓':''}</div>`;
+      h+=cell(0,' wide '+(pi%2?'kbr':'kbl'));
+      for(let j=1;j<=n;j++){ const c=(j-1)%2, r=Math.floor((j-1)/2), last=j===n;
+        let cls=''; if(c===0&&!last) cls+=' kr'; if(r<rows-1) cls+=' kb'; if(last&&c===0) cls+=' wide';
+        h+=cell(j,cls); }
+      return `<div class="pz ${full?'full':''}" data-row="${p.id}" style="${cv(p.id)}">${h}</div>`;}).join('')}</div>
+    <div class="trays">
+      <div class="tray2"><div class="tray2-h">🟨 ${grade==='1'?'Что называют?':'Что обозначает?'}</div><div class="pz-tray" data-tray>${trayM.map(trayPiece).join('')||'<span class="empty">Все жёлтые детальки на месте 👍</span>'}</div></div>
+      <div class="tray2"><div class="tray2-h">🟦 На какой вопрос отвечает?</div><div class="pz-tray" data-tray>${trayQ.map(trayPiece).join('')||'<span class="empty">Все голубые детальки на месте 👍</span>'}</div></div>
+    </div>`;
+  if(flash!=null){const el=root.querySelector(`[data-pc="${flash}"]`); if(el) el.classList.add('shake');}
+}
+function pzPlace(id,pos,j){
+  const x=PZ.pieces[id]; if(!x||x.at){PZ.sel=null; renderMatch(); return;}
+  if(j==null){ // dropped on the row: take the first free place of the right kind
+    if(x.kind==='m') j=inSlot(pos,0)?-1:0; else { j=-1; for(let t=1;t<slotsOf(pos);t++) if(!inSlot(pos,t)){j=t;break;} }
+    if(j<0){ if(x.key.includes(pos)){PZ.sel=null; renderMatch(id); owl('Здесь уже всё собрано!',true); return;} }
+  }
+  const kind=j===0?'m':'q';
+  if(j>=0 && x.kind!==kind){ PZ.sel=null; renderMatch(id); owl(x.kind==='q'?'Это вопрос — его место после жёлтой детальки!':'Жёлтая деталька ставится сразу после названия!',true); return; }
+  if(!x.key.includes(pos)){ PZ.mist++; PZ.sel=null; renderMatch(id); oops(); return; }
+  x.at=pos+'|'+j; PZ.sel=null; renderMatch();
+  if(!PZ.won && PZ.pieces.every(p=>p.at)){ PZ.won=true; win(PZ.mist===0?6:4,'Все пазлы собраны! ⭐'); }
+  else if(rowFull(pos)){ owl('Пазл «'+posById(pos).name+'» собран!'); addStars(1); }
+  else if(Math.random()<.3) praise();
+}
+function pzTarget(el){ const g=el.closest('[data-slot]'); if(g){const [p,j]=g.dataset.slot.split('|'); return [p,+j];} const r=el.closest('[data-row]'); return r?[r.dataset.row,null]:null; }
+(function(){
+  const root=$('#s-match');
+  root.addEventListener('click',e=>{
+    if(e.target.closest('#pzAgain')){ resetPuzzle(); renderMatch(); return; }
+    const pc=e.target.closest('[data-pc]');
+    if(pc){ const x=PZ.pieces[+pc.dataset.pc]; PZ.sel=PZ.sel===x.id?null:x.id; renderMatch(); return; }
+    const t=pzTarget(e.target); if(t&&PZ.sel!=null) pzPlace(PZ.sel,t[0],t[1]);
+  });
+  root.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-pc],[data-slot]')){e.preventDefault(); e.target.click();} });
+  pDrag(root,'[data-pc]',(el,t)=>{ const tg=pzTarget(t); if(tg) pzPlace(+el.dataset.pc,tg[0],tg[1]); });
+})();
+
+/* ---------- 2. sort ---------- */
+function wireAdd(inSel,btnSel,inst){ const inp=$(inSel), btn=$(btnSel); if(!inp||!btn) return;
+  const go=()=>{const ws=splitWords(inp.value); if(ws.length){inst.add(ws); inp.value=''; owl('Слово добавлено — разложи его!');} inp.focus();};
+  btn.onclick=go; inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault(); go();}}; }
+let sortCount=store.get('chr_cnt',12);
+function renderSortTab(){
+  const root=$('#s-sort'), Sc=S();
+  root.innerHTML=`<div class="shead"><h2>🧺 Разложи слова</h2><p>Перетащи слово в корзинку ${grade==='1'?'нужной группы':'нужной части речи'} — или нажми на слово, а потом на корзинку.</p></div>
+    <div class="toolbar"><div class="pills"><span class="cnt-l">Слов:</span>${[6,12,18,24,36,0].map(n=>`<button type="button" class="pill ${sortCount===n?'on':''}" data-cnt="${n}" style="--c:var(--adj)">${n||'Все'}</button>`).join('')}</div>
+    <div class="addbar"><input type="text" id="addSort" placeholder="Своё слово (можно через запятую)" autocomplete="off"><button type="button" class="btn" id="addSortBtn">➕ Добавить</button></div>
+    <button type="button" class="btn primary" id="sortNew">🔄 Новые слова</button></div>
+    <div id="sortBox"></div>`;
+  const items=[], pools=actPos().map(p=>shuffle(Sc.pool[p.id]).map(x=>({w:x.split(':')[0],key:p.id})));
+  const want=sortCount||Infinity; let k=0;
+  while(items.length<want && pools.some(pl=>pl.length)){ const pl=pools[k%pools.length]; if(pl.length) items.push(pl.shift()); k++; }
+  const sb=Sort($('#sortBox'),{check:true,dictCheck:true,items:shuffle(items),buckets:actPos().map(p=>({key:p.id,label:p.name,sub:p.q.toLowerCase(),color:col(p.id),tint:tint(p.id),emo:EMO[p.id]}))});
+  $('#sortNew').onclick=renderSortTab;
+  root.querySelectorAll('[data-cnt]').forEach(b=>b.onclick=()=>{sortCount=+b.dataset.cnt; store.set('chr_cnt',sortCount); renderSortTab();});
+  wireAdd('#addSort','#addSortBtn',sb);
+}
+
+/* ---------- 3. tasks ---------- */
+let T={pos:null,idx:0};
+let taskCount=store.get('chr_tcnt',12);
+function renderTasks(){
+  const root=$('#s-tasks'), Sc=S();
+  const list=actPos().filter(p=>Sc.tasks[p.id]);
+  if(!T.pos||!Sc.tasks[T.pos]||!list.some(x=>x.id===T.pos)){T.pos=list[0].id; T.idx=0;}
+  const tasks=Sc.tasks[T.pos], task=tasks[T.idx], p=posById(T.pos), c=col(p.id);
+  root.innerHTML=`<div class="twrap">
+    <aside class="tside">
+      <div class="tlabel">${grade==='1'?'Группа слов':'Часть речи'}</div>
+      <div class="tlist">${list.map(x=>`<button type="button" class="tpos ${x.id===T.pos?'on':''}" data-pos="${x.id}" style="${cv(x.id)}"><span class="e">${EMO[x.id]}</span>${x.name}</button>`).join('')}</div>
+      <div class="tlabel">Задание</div>
+      <div class="tlist">${tasks.map((t,i)=>`<button type="button" class="ttask ${i===T.idx?'on':''}" data-ti="${i}" style="${cv(p.id)}"><span class="n">${i+1}</span><span class="tn">${t.title}</span><span class="k">${t.type==='pick'?'❓':'🧺'}</span></button>`).join('')}</div>
+    </aside>
+    <div class="tmain" style="${cv(p.id)}">
+      <div class="shead"><h2 style="color:${c}">${task.title}</h2><span class="sp"></span>${task.type==='pick'?'':`<button type="button" class="btn" id="taskAgain">🔄 Заново</button>`}</div>
+      <p class="hint">💡 ${task.hint}</p>
+      ${task.type==='pick'?'':`<div class="toolbar"><div class="pills"><span class="cnt-l">Слов:</span>${[6,12,18,24,0].map(n=>`<button type="button" class="pill ${taskCount===n?'on':''}" data-tcnt="${n}" style="--c:${c}">${n||'Все'}</button>`).join('')}</div><div class="addbar"><input type="text" id="addTask" placeholder="Своё слово для этого задания" autocomplete="off"><button type="button" class="btn" id="addTaskBtn">➕ Добавить</button></div></div>`}
+      <div id="taskBox"></div>
+    </div></div>`;
+  if(task.type==='pick') Pick($('#taskBox'),task.qs,cv(p.id));
+  else {
+    const groups=task.cats.map((_,i)=>shuffle(task.items.filter(x=>x[1]===i))), picked=[], want=taskCount||Infinity; let k=0;
+    while(picked.length<want && groups.some(g=>g.length)){ const g=groups[k%groups.length]; if(g.length) picked.push(g.shift()); k++; }
+    root.querySelectorAll('[data-tcnt]').forEach(b=>b.onclick=()=>{taskCount=+b.dataset.tcnt; store.set('chr_tcnt',taskCount); renderTasks();});
+    wireAdd('#addTask','#addTaskBtn',Sort($('#taskBox'),{check:true,items:shuffle(picked.map(([w,i])=>({w,key:'c'+i}))),buckets:task.cats.map((ct,i)=>({key:'c'+i,label:ct.label,sub:ct.sub,color:c,tint:tint(p.id)}))}));
+  }
+}
+$('#s-tasks').addEventListener('click',e=>{
+  const a=e.target.closest('[data-pos]'); if(a){T.pos=a.dataset.pos; T.idx=0; renderTasks(); return;}
+  const b=e.target.closest('[data-ti]'); if(b){T.idx=+b.dataset.ti; renderTasks(); return;}
+  if(e.target.closest('#taskAgain')) renderTasks();
+});
+
+/* ---------- 4. sentence parsing ---------- */
+const Z={src:0,words:[],sel:null,checked:false,shown:false,custom:''};
+function loadSentence(i){
+  const Sc=S(); Z.src=i; Z.checked=false; Z.shown=false; Z.sel=0;
+  const text = i==='own' ? Z.custom : Sc.sentences[i].text;
+  Z.words=text.split(/\s+/).filter(Boolean).map(t=>{
+    const [w,tag]=t.split('|'); let ans=null;
+    if(tag){const [p,te]=tag.split('.'); ans={pos:p,tense:te||null};}
+    else { const d=Sc.dict[norm(w)]; if(d) ans={pos:d.pos,tense:d.tense||null}; }
+    const main=ans&&S().pos.some(p=>p.id===ans.pos);
+    return {w,ans,user:null,res:null,skip:!!(main&&!ACT().has(ans.pos))};
+  }).filter(x=>norm(x.w)!=='');
+  Z.sel=Z.words.findIndex(x=>!x.skip); if(Z.sel<0) Z.sel=null;
+  renderSent();
+}
+const labelOf=v=>{ if(!v) return ''; const p=posById(v.pos); let s=p?p.short:''; if(v.pos==='verb'&&v.tense) s+=', '+tenseById(v.tense).short; return s; };
+function renderSent(){
+  const root=$('#s-sent'), Sc=S();
+  const cur=Z.sel!=null?Z.words[Z.sel]:null;
+  let total=0,ok=0; Z.words.forEach(x=>{if(x.res){total++; if(x.res==='ok') ok++;}});
+  root.innerHTML=`<div class="shead"><h2>🔍 Разбор предложения</h2><p>Нажми на слово, а внизу выбери, ${grade==='1'?'к какой группе оно относится':'какая это часть речи'}.${Sc.hasTense?' У глагола выбери ещё и <b>время</b>.':''}</p></div>
+    <div class="pills">${Sc.sentences.map((s,i)=>`<button type="button" class="pill ${Z.src===i?'on':''}" data-si="${i}" style="--c:var(--adv)">${s.title.replace('Предложение ','№ ')}</button>`).join('')}${Z.custom?`<button type="button" class="pill ${Z.src==='own'?'on':''}" data-si="own" style="--c:var(--pron)">Моё</button>`:''}<button type="button" class="pill ${Z.ownOpen?'on':''}" id="zOwnT" style="--c:var(--pron)">✍️ Своё предложение</button></div>
+    ${Z.ownOpen?`<div class="ownrow"><input type="text" id="ownSent" autocomplete="off" placeholder="Например: Маленькая птичка весело поёт." value="${esc(Z.custom)}"><button type="button" class="btn primary" id="zOwn">Разобрать</button></div>`:''}
+    <div class="sent">${Z.words.map((x,i)=>{
+      const v=Z.shown&&x.ans?x.ans:x.user;
+      const cls=[Z.sel===i?'sel':'', x.res==='ok'?'ok':'', x.res==='bad'&&!Z.shown?'bad':''].join(' ');
+      if(x.skip) return `<span class="w skip"><span class="lab"></span><span class="tx">${esc(x.w)}</span></span>`;
+      return `<button type="button" class="w ${cls}" data-wi="${i}" style="${v?`--c:${col(v.pos)}`:''}"><span class="lab">${esc(labelOf(v))}</span><span class="tx">${esc(x.w)}</span></button>`;
+    }).join('')}</div>
+    <div class="palette">
+      <div class="ptitle">${cur?`Слово «<b>${esc(cur.w)}</b>» — это…`:'Выбери слово в предложении'}</div>
+      <div class="prow">${allPos().map(p=>`<button type="button" class="pbtn ${cur&&cur.user&&cur.user.pos===p.id?'on':''}" data-pp="${p.id}" style="${cv(p.id)}">${p.name}<span class="ab">${p.short}</span></button>`).join('')}</div>
+      ${Sc.hasTense&&cur&&cur.user&&cur.user.pos==='verb'?`<div class="prow"><span class="ptitle" style="width:100%;margin:0">Время глагола:</span>${TENSES.map(t=>`<button type="button" class="pbtn ${cur.user.tense===t.id?'on':''}" data-pt="${t.id}" style="${cv('verb')}">${t.name}</button>`).join('')}</div>`:''}
+    </div>
+    <div class="bar">
+      <button type="button" class="btn go" id="zCheck">✓ Проверить</button>
+      <button type="button" class="btn" id="zShow">${Z.shown?'🙈 Скрыть ответ':'👀 Показать ответ'}</button>
+      <button type="button" class="btn" id="zClear">🧽 Стереть подписи</button>
+      ${Z.checked?`<span class="status">Верно: <b class="good">${ok}</b> из ${total}${Z.words.some(x=>!x.ans)?' · остальные слова проверит учитель':''}</span>`:''}
+    </div>`;
+}
+function nextFree(){ const n=Z.words.findIndex((x,i)=>i>Z.sel&&!x.user&&!x.skip); Z.sel = n>=0?n:Z.sel; }
+$('#s-sent').addEventListener('click',e=>{
+  const t=e.target;
+  if(t.closest('#zOwnT')){ Z.ownOpen=!Z.ownOpen; renderSent(); const i=$('#ownSent'); if(i) i.focus(); return; }
+  const si=t.closest('[data-si]'); if(si){ loadSentence(si.dataset.si==='own'?'own':+si.dataset.si); return; }
+  const w=t.closest('[data-wi]'); if(w){ Z.sel=+w.dataset.wi; Z.shown=false; renderSent(); return; }
+  const pp=t.closest('[data-pp]'); if(pp&&Z.sel!=null){ const x=Z.words[Z.sel]; x.user={pos:pp.dataset.pp,tense:null}; x.res=null; Z.shown=false;
+    if(!(S().hasTense&&x.user.pos==='verb')) nextFree(); renderSent(); return; }
+  const pt=t.closest('[data-pt]'); if(pt&&Z.sel!=null){ Z.words[Z.sel].user.tense=pt.dataset.pt; Z.words[Z.sel].res=null; nextFree(); renderSent(); return; }
+  if(t.closest('#zCheck')){ Z.shown=false; Z.checked=true; Z.words.forEach(x=>{ if(!x.ans||x.skip){x.res=null;return;}
+      const u=x.user; x.res = u&&u.pos===x.ans.pos&&(x.ans.pos!=='verb'||!S().hasTense||!x.ans.tense||u.tense===x.ans.tense)?'ok':'bad'; });
+    renderSent(); const tot=Z.words.filter(x=>x.res).length, ok=Z.words.filter(x=>x.res==='ok').length;
+    if(tot&&ok===tot) win(5,'Всё верно! +5 ⭐'); else if(tot) oops(); return; }
+  if(t.closest('#zShow')){ Z.shown=!Z.shown; renderSent(); return; }
+  if(t.closest('#zClear')){ Z.words.forEach(x=>{x.user=null;x.res=null}); Z.checked=false; Z.shown=false; Z.sel=0; renderSent(); return; }
+  if(t.closest('#zOwn')){ const v=$('#ownSent').value.trim(); if(!v) return; Z.custom=v; loadSentence('own'); }
+});
+$('#s-sent').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.id==='ownSent'){ e.preventDefault(); $('#zOwn').click(); } });
+
+/* ---------- 5. own words ---------- */
+let ownSort=null;
+const splitWords=v=>(/[,;\n]/.test(v)?v.split(/[,;\n]+/):v.split(/\s+/)).map(s=>s.trim().replace(/[.!?]/g,'')).filter(Boolean);
+function renderOwn(){
+  const root=$('#s-own'), Sc=S();
+  root.innerHTML=`<div class="shead"><h2>📝 Мои слова</h2><p>Впиши свои слова через запятую, добавь и разложи их по ${grade==='1'?'группам':'частям речи'}.${Sc.hasTense?' Глаголы — сразу по <b>временам</b>.':''}</p></div>
+    <div class="toolbar"><div class="addbar wide"><input type="text" id="ownWords" autocomplete="off" placeholder="Например: ручка, писать, синий"><button type="button" class="btn primary" id="oAdd">➕ Добавить</button></div>
+      <button type="button" class="btn go" id="oCheck">✓ Проверить</button><button type="button" class="btn" id="oClear">🧽 Убрать все</button></div>
+    <div id="ownBox"></div>
+    <p class="legend">✓ — верно · ✗ — ошибка · ? — тренажёр не знает это слово, его проверит учитель. Слово в корзинке можно перенести в другую корзинку или обратно наверх.</p>`;
+  const buckets=actPos().map(p=>{const b={key:p.id,label:p.name,sub:p.q.toLowerCase(),color:col(p.id),tint:tint(p.id),emo:EMO[p.id]}; if(Sc.hasTense&&p.id==='verb') b.zones=TENSES.map(t=>({key:'verb.'+t.id,label:t.name})); return b;});
+  ownSort=Sort($('#ownBox'),{check:false,items:splitWords(Sc.ownDefault).map(w=>({w})),buckets});
+  $('#oAdd').onclick=()=>{const ta=$('#ownWords'); const ws=splitWords(ta.value); if(ws.length){ownSort.add(ws); ta.value='';} ta.focus();};
+  $('#ownWords').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); $('#oAdd').click(); } };
+  $('#oCheck').onclick=()=>ownSort.check(S().dict,S().hasTense);
+  $('#oClear').onclick=()=>ownSort.clear();
+}
+
+/* ---------- 6. board: chalk challenges ---------- */
+const ADJ_END={m:/(ый|ий|ой)$/,f:/(ая|яя)$/,n:/(ое|ее)$/,pl:/(ые|ие)$/};
+const ADJ_Q={m:'какой?',f:'какая?',n:'какое?',pl:'какие?'};
+const PRES3=/(ет|ёт|ит|ат|ят)(ся)?$/;
+const BOARD={
+ '24':[
+  ()=>{const v=pickOne([
+      {inf:'читать',past:['читал','читала'],pres:['читаю'],fut:['буду читать','прочитаю']},
+      {inf:'рисовать',past:['рисовал','рисовала'],pres:['рисую'],fut:['буду рисовать','нарисую']},
+      {inf:'гулять',past:['гулял','гуляла'],pres:['гуляю'],fut:['буду гулять','погуляю']},
+      {inf:'петь',past:['пел','пела'],pres:['пою'],fut:['буду петь','спою']},
+      {inf:'писать',past:['писал','писала'],pres:['пишу'],fut:['буду писать','напишу']},
+      {inf:'играть',past:['играл','играла'],pres:['играю'],fut:['буду играть','поиграю']}]);
+    return {kind:'Измени глагол по временам',task:`Измени глагол <b>${v.inf}</b> по временам.`,
+      slots:[{pre:'Вчера я',tag:'прош. вр.',acc:v.past},{pre:'Сейчас я',tag:'наст. вр.',acc:v.pres},{pre:'Завтра я',tag:'буд. вр.',acc:v.fut}]};},
+  ()=>{const set=shuffle([['мяч','m'],['ёлка','f'],['солнце','n'],['шары','pl'],['снег','m'],['река','f'],['озеро','n'],['листья','pl'],['кошка','f'],['небо','n']]).slice(0,3);
+    return {kind:'Подбери прилагательное',task:'Подбери к каждому существительному <b>прилагательное</b>. Помни про род и число!',
+      slots:set.map(([n,g])=>({tag:ADJ_Q[g],post:n,rule:ADJ_END[g],need:'adj',hint:`к слову «${n}» спроси «${ADJ_Q[g]}»`}))};},
+  ()=>{const n=pickOne(['собака','птица','ученик','ветер','мама','река','кошка']);
+    return {kind:'Подбери глаголы',task:`Что делает <b>${n}</b>? Напиши три глагола в <b>настоящем времени</b>.`,
+      slots:[1,2,3].map(()=>({pre:n,tag:'что делает?',rule:PRES3,need:'verb',tense:'pres',hint:'глагол должен отвечать на вопрос «что делает?»',uniq:true}))};},
+  ()=>{const set=shuffle([['стол','столы'],['кошка','кошки'],['окно','окна'],['дерево','деревья'],['друг','друзья'],['город','города'],['звезда','звёзды'],['ребёнок','дети']]).slice(0,3);
+    return {kind:'Один — много',task:'Измени <b>число</b> существительных: один предмет → много предметов.',
+      slots:set.map(([a,b])=>({pre:'один: '+a+' →',tag:'много',acc:[b]}))};},
+  ()=>{const set=shuffle([['Маша','она'],['Петя','он'],['дети','они'],['солнце','оно'],['мальчик','он'],['птицы','они'],['бабушка','она'],['окно','оно']]).slice(0,3);
+    return {kind:'Замени местоимением',task:'Замени существительное <b>местоимением</b>.',
+      slots:set.map(([a,b])=>({pre:a+' →',tag:'мест.',acc:[b]}))};},
+  ()=>{const sc=pickOne([['adj','noun','verb'],['noun','verb','adv'],['adj','noun','adv','verb'],['noun','verb']].filter(x=>x.every(y=>ACT().has(y))));
+    const nm={adj:'прил.',noun:'сущ.',verb:'гл.',adv:'нареч.'};
+    return {kind:'Предложение по схеме',task:'Составь предложение <b>по схеме</b>. Пиши по одному слову в каждую строчку.',scheme:sc.map(x=>nm[x]),
+      slots:sc.map(x=>({tag:nm[x],need:x,rule:x==='adj'?/(ый|ий|ой|ая|яя|ое|ее|ые|ие)$/:x==='verb'?/(ет|ёт|ит|ат|ят|ут|ют|ал|ял|ил|ел|ла|ли|ло)(ся|сь)?$/:null}))};}
+ ],
+ '1':[
+  ()=>{const set=shuffle([['мяч','m'],['кукла','f'],['солнце','n'],['шары','pl'],['ёжик','m'],['лиса','f'],['яблоко','n'],['цветы','pl']]).slice(0,3);
+    return {kind:'Подбери слово-признак',task:'Какой предмет? Подбери <b>слово-признак</b>.',
+      slots:set.map(([n,g])=>({tag:ADJ_Q[g],post:n,rule:ADJ_END[g],need:'attr',hint:`спроси «${ADJ_Q[g]} ${n}?»`}))};},
+  ()=>{const n=pickOne(['кошка','собака','птица','рыбка','мальчик','солнце','заяц']);
+    return {kind:'Подбери слова-действия',task:`Что делает <b>${n}</b>? Напиши три слова-действия.`,
+      slots:[1,2,3].map(()=>({pre:n,tag:'что делает?',rule:PRES3,need:'act',hint:'слово должно отвечать на вопрос «что делает?»',uniq:true}))};},
+  ()=>{const set=shuffle([['кот','коты'],['мяч','мячи'],['книга','книги'],['гриб','грибы'],['машина','машины'],['лиса','лисы'],['дом','дома']]).slice(0,3);
+    return {kind:'Один — много',task:'Один предмет → <b>много</b> предметов.',
+      slots:set.map(([a,b])=>({pre:'один '+a+' →',tag:'много',acc:[b]}))};},
+  ()=>({kind:'Предложение по схеме',task:'Составь предложение: <b>признак + предмет + действие</b>.',scheme:['какой?','кто? что?','что делает?'],
+      slots:[{tag:'какой?',need:'attr',rule:/(ый|ий|ой|ая|яя|ое|ее|ые|ие)$/},{tag:'кто? что?',need:'obj'},{tag:'что делает?',need:'act',rule:/(ет|ёт|ит|ат|ят|ут|ют)(ся)?$/}]}),
+  ()=>{const two=pickOne([['живое','кто?',['кот','мама','заяц','папа','птица','рыбка','ёжик','мальчик','девочка','собака','лиса','волк','медведь','белка','корова','утка','бабушка','дедушка','сестра','брат','учитель']],['неживое','что?',['мяч','дом','стол','книга','река','машина','окно','ручка','стул','солнце','лес','кукла','тетрадь','шкаф','снег','дерево','цветок','яблоко','портфель']]]);
+    return {kind:'Кто? Что?',task:`Напиши три слова-предмета, которые отвечают на вопрос <b>${two[1]}</b> (${two[0]}).`,
+      slots:[1,2,3].map(()=>({tag:two[1],list:two[2],uniq:true}))};}
+ ]
+};
+const BOARD_NEED={'24':[['verb'],['adj','noun'],['verb','noun'],['noun'],['pron','noun'],['noun','verb']],'1':[['attr','obj'],['act','obj'],['obj'],['attr','obj','act'],['obj']]};
+let BD=null, bLast=-1;
+function newBoard(){ const L=BOARD[grade], A=ACT(), ok=L.map((_,i)=>i).filter(i=>BOARD_NEED[grade][i].every(x=>A.has(x)));
+  if(!ok.length){ $('#s-board').innerHTML=`<div class="shead"><h2>🖍️ У доски</h2></div><div class="board-wrap"><div class="board"><div class="btask">Для выбранных ${grade==='1'?'групп слов':'частей речи'} заданий у доски пока нет. Включи ещё ${grade==='1'?'«предметы»':'«сущ.»'} наверху.</div></div><div class="ledge"><i></i><i></i><i></i><i></i><b></b></div></div>`; return; }
+  let k; do{k=pickOne(ok);}while(ok.length>1&&k===bLast); bLast=k; BD={...L[k](),res:null,done:false}; $('#s-board').innerHTML=''; renderBoard(); }
+function renderBoard(){
+  const root=$('#s-board');
+  const vals=[...root.querySelectorAll('.slot input')].map(i=>i.value);
+  root.innerHTML=`<div class="shead"><h2>🖍️ У доски</h2><p>Прочитай задание, напиши ответы мелом на строчках и нажми «Проверить».</p></div>
+    <div class="bdwrap"><div class="board-wrap"><div class="board">
+      <div class="bkind">✦ ${BD.kind}</div>
+      <div class="btask">${BD.task}</div>
+      ${BD.scheme?`<div class="scheme">${BD.scheme.map(s=>`<span>${s}</span>`).join('')}</div>`:''}
+      <div class="slots">${BD.slots.map((s,i)=>{const r=BD.res&&BD.res[i];
+        return `<div class="slot">${s.pre?`<span class="pre">${esc(s.pre)}</span>`:''}<span class="tag">${s.tag}</span><input type="text" id="bs${i}" autocomplete="off" spellcheck="false" placeholder="…" value="${esc(vals[i]||'')}" ${BD.done?'readonly':''}>${s.post?`<span class="post">${esc(s.post)}</span>`:''}<span class="res ${r?r.c:''}">${r?r.m:''}</span>${r&&r.fix?`<span class="fix ${r.c==='q'?'q':''}">${esc(r.fix)}</span>`:''}</div>`;}).join('')}</div>
+      <div class="bmsg" id="bmsg">${BD.msg||''}</div>
+    </div><div class="ledge"><i></i><i></i><i></i><i></i><b></b></div></div>
+    <div class="bside">
+      <button type="button" class="btn go" id="bCheck">✓ Проверить</button>
+      <button type="button" class="btn primary" id="bNext">🔄 Новое задание</button>
+      <button type="button" class="btn" id="bWipe">🧽 Стереть</button>
+    </div></div>`;
+  root.querySelectorAll('.slot input').forEach((inp,i,all)=>inp.onkeydown=e=>{ if(e.key==='Enter'){e.preventDefault(); (all[i+1]||$('#bCheck')).focus(); }});
+}
+function checkBoard(){
+  const root=$('#s-board'), inputs=[...root.querySelectorAll('.slot input')], dict=S().dict, seen=new Set();
+  let good=0, bad=0, q=0, empty=0;
+  BD.res=BD.slots.map((s,i)=>{
+    const raw=inputs[i].value.trim(), v=norm(raw);
+    if(!v){empty++; return {c:'no',m:'…',fix:'Строчка пустая — напиши слово'};}
+    if(s.uniq && seen.has(v)){bad++; return {c:'no',m:'✗',fix:'Это слово уже было, придумай другое'};}
+    seen.add(v);
+    if(s.acc){ if(s.acc.map(norm).includes(v)){good++; return {c:'ok',m:'✓'};} bad++; return {c:'no',m:'✗',fix:'Правильно: '+s.acc.join(' или ')}; }
+    if(s.list){ if(s.list.map(norm).includes(v)){good++; return {c:'ok',m:'✓'};} q++; return {c:'q',m:'?',fix:'Покажи учителю'}; }
+    const d=dict[v];
+    if(d && s.need){
+      const ok=d.pos===s.need && (!s.tense||!d.tense||d.tense===s.tense) && (!s.rule||s.rule.test(v));
+      if(ok){good++; return {c:'ok',m:'✓'};}
+      if(d.pos!==s.need){bad++; return {c:'no',m:'✗',fix:`«${raw}» — это ${posById(d.pos).name.toLowerCase()}`};}
+    }
+    if(s.rule){ if(s.rule.test(v)){good++; return {c:'ok',m:'✓'};} bad++; return {c:'no',m:'✗',fix:s.hint?('Подсказка: '+s.hint):'Проверь окончание'}; }
+    q++; return {c:'q',m:'?',fix:'Покажи учителю'};
+  });
+  const total=BD.slots.length;
+  if(good===total){ BD.done=true; BD.msg='Ура! Всё верно! Можно взять новое задание.'; renderBoard(); win(good,`Отлично! +${good} ⭐`); }
+  else { BD.msg = bad||empty ? 'Исправь ошибки мелом и проверь ещё раз.' : 'Почти всё! Слова с «?» проверит учитель.'; renderBoard(); if(good) addStars(0); if(bad||empty) oops(); else praise(); }
+}
+$('#s-board').addEventListener('click',e=>{
+  if(e.target.closest('#bCheck')){ if(!BD.done) checkBoard(); return; }
+  if(e.target.closest('#bNext')){ newBoard(); return; }
+  if(e.target.closest('#bWipe')){ BD.res=null; BD.done=false; BD.msg=''; $('#s-board').querySelectorAll('.slot input').forEach(i=>i.value=''); renderBoard(); }
+});
+
+/* ---------- 7. quiz: which part of speech is this word? ---------- */
+const QZ={list:[],i:0,mist:0,streak:0,best:0,locked:false,wrong:new Set(),errs:[],n:store.get('chr_qn',10)};
+const qzOpts=()=>actPos().length>=2?actPos():S().pos;
+function newQuiz(){
+  const Sc=S(), per=actPos().map(p=>shuffle((Sc.pool[p.id]||[]).map(x=>({w:x.split(':')[0],pos:p.id}))));
+  const list=[]; let k=0; while(list.length<QZ.n && per.some(a=>a.length)){ const a=per[k%per.length]; if(a.length) list.push(a.shift()); k++; }
+  Object.assign(QZ,{list:shuffle(list),i:0,mist:0,streak:0,best:0,locked:false,wrong:new Set(),errs:[]});
+  renderQuiz();
+}
+function renderQuiz(){
+  const root=$('#s-quiz');
+  const head=`<div class="shead"><h2>🎯 Викторина</h2><p>${grade==='1'?'Что называет это слово?':'Какая это часть речи?'} Задай к слову вопрос и выбери ответ.</p>
+    <div class="pills"><span class="cnt-l">Вопросов:</span>${[5,10,15,20].map(n=>`<button type="button" class="pill ${QZ.n===n?'on':''}" data-qn="${n}" style="--c:var(--num)">${n}</button>`).join('')}</div>
+    <button type="button" class="btn primary" id="qzNew">🔄 Заново</button></div>`;
+  if(QZ.i>=QZ.list.length){ const m=QZ.mist;
+    root.innerHTML=head+`<div class="quiz"><div class="qzcard finish"><div class="bigstar">${m===0?'🏆':m<=2?'🌟':'⭐'}</div><h3>${m===0?'Ни одной ошибки!':'Викторина пройдена!'}</h3>
+      <p>Ошибок: <b class="${m?'bad':'good'}">${m}</b> · лучшая серия: <b>🔥 ${QZ.best}</b></p>${QZ.errs.length?`<p class="legend">Повтори слова: <b>${QZ.errs.map(esc).join(', ')}</b></p>`:''}
+      <button type="button" class="btn primary" id="qzNew2">Ещё раз</button></div></div>`; return; }
+  const q=QZ.list[QZ.i], ans=QZ.locked?posById(q.pos):null;
+  root.innerHTML=head+`<div class="quiz"><div class="qzcard" style="${ans?cv(q.pos):''}">
+      <div class="qprog">${QZ.list.map((_,k)=>`<i class="${k<QZ.i?'d':k===QZ.i?'c':''}"></i>`).join('')}</div>
+      <div class="qzword ${ans?'got':''}">${esc(q.w)}</div>
+      <div class="qzlab">${ans?esc(ans.name)+' — '+esc(ans.q.toLowerCase()):'&nbsp;'}</div>
+      <div class="qzopts" style="grid-template-columns:repeat(${qzOpts().length<=4?qzOpts().length:3},minmax(0,1fr))">${qzOpts().map(p=>`<button type="button" class="qzo ${QZ.locked&&p.id===q.pos?'right':''} ${QZ.wrong.has(p.id)?'wrong':''}" data-qz="${p.id}" style="${cv(p.id)}" ${QZ.wrong.has(p.id)?'disabled':''}><span class="e">${EMO[p.id]}</span>${p.name}<small>${p.q.toLowerCase()}</small></button>`).join('')}</div>
+    </div>
+    <div class="qzinfo"><span>Вопрос ${QZ.i+1} из ${QZ.list.length}</span><span>Серия: 🔥 ${QZ.streak}</span><span>Ошибок: <b class="${QZ.mist?'bad':'good'}">${QZ.mist}</b></span></div></div>`;
+}
+$('#s-quiz').addEventListener('click',e=>{
+  if(e.target.closest('#qzNew,#qzNew2')){ newQuiz(); return; }
+  const n=e.target.closest('[data-qn]'); if(n){ QZ.n=+n.dataset.qn; store.set('chr_qn',QZ.n); newQuiz(); return; }
+  const b=e.target.closest('[data-qz]'); if(!b||QZ.locked) return;
+  const q=QZ.list[QZ.i], list=QZ.list;
+  if(b.dataset.qz===q.pos){ QZ.locked=true; QZ.streak++; QZ.best=Math.max(QZ.best,QZ.streak); renderQuiz();
+    if(QZ.streak%5===0){ owl('Серия '+QZ.streak+' 🔥 +1 ⭐'); addStars(1); } else if(Math.random()<.4) praise();
+    setTimeout(()=>{ if(QZ.list!==list) return; QZ.i++; QZ.locked=false; QZ.wrong=new Set(); renderQuiz(); if(QZ.i>=QZ.list.length) win(QZ.mist===0?5:QZ.mist<=2?3:2); },950);
+  } else { const id=b.dataset.qz; QZ.mist++; QZ.streak=0; QZ.wrong.add(id); if(!QZ.errs.includes(q.w)) QZ.errs.push(q.w); renderQuiz();
+    const nb=$('#s-quiz').querySelector(`[data-qz="${id}"]`); if(nb) nb.classList.add('shake'); oops(); }
+});
+
+/* ---------- 8. hunt: tap every word of one part of speech ---------- */
+const HN={words:[],target:null,checked:false,shown:false,lastS:-1,lastT:null};
+function newHunt(){
+  const Sc=S(), A=ACT();
+  const parsed=Sc.sentences.map((s,i)=>({i,words:s.text.split(/\s+/).filter(Boolean).map(t=>{const [w,tag]=t.split('|'); return {w,pos:tag?tag.split('.')[0]:null,on:false,res:null};})}));
+  const opts=[]; parsed.forEach(p=>{ if(p.i===HN.lastS&&parsed.length>1) return; [...new Set(p.words.map(x=>x.pos))].filter(x=>A.has(x)).forEach(t=>opts.push({p,t})); });
+  if(!opts.length){ $('#s-hunt').innerHTML=`<div class="shead"><h2>🔎 Найди слова</h2><p>Для выбранных ${grade==='1'?'групп':'частей речи'} пока нет текстов. Включи ещё наверху.</p></div>`; return; }
+  let pool=opts.filter(o=>o.t!==HN.lastT); if(!pool.length) pool=opts;
+  const o=pickOne(pool); Object.assign(HN,{lastS:o.p.i,lastT:o.t,words:o.p.words,target:o.t,checked:false,shown:false}); renderHunt();
+}
+function renderHunt(){
+  const root=$('#s-hunt'), p=posById(HN.target), need=HN.words.filter(x=>x.pos===HN.target).length;
+  let st='';
+  if(HN.checked){ const c=r=>HN.words.filter(x=>x.res===r).length, ok=c('ok'), bad=c('bad'), miss=c('miss');
+    st=`<span class="status">Найдено: <b class="good">${ok}</b> из ${need}${bad?` · лишние: <b class="bad">${bad}</b>`:''}${miss?` · пропущено: <b>${miss}</b> — они обведены пунктиром`:''}</span>`; }
+  root.innerHTML=`<div class="shead"><h2>🔎 Найди слова</h2><p>Нажми на все слова нужной ${grade==='1'?'группы':'части речи'}, потом — «Проверить».</p></div>
+    <div class="hunt-task" style="${cv(HN.target)}"><span>Найди все слова:</span><span class="tg">${EMO[HN.target]} ${p.name}</span><small>${p.q.toLowerCase()} · их здесь ${need}</small></div>
+    <div class="htext">${HN.words.map((x,i)=>`<button type="button" class="hw ${x.on?'on':''} ${x.res||''}" data-hw="${i}">${esc(x.w)}</button>`).join('')}</div>
+    <div class="bar"><button type="button" class="btn go" id="hCheck">✓ Проверить</button><button type="button" class="btn primary" id="hNext">🔄 Другое задание</button>${HN.checked&&!HN.shown?'<button type="button" class="btn" id="hShow">👀 Показать ответ</button>':''}${st}</div>`;
+}
+$('#s-hunt').addEventListener('click',e=>{
+  const w=e.target.closest('[data-hw]'); if(w){ const x=HN.words[+w.dataset.hw]; x.on=!x.on; if(HN.checked){ HN.checked=false; HN.words.forEach(y=>y.res=null); } renderHunt(); return; }
+  if(e.target.closest('#hNext')){ newHunt(); return; }
+  if(e.target.closest('#hShow')){ HN.shown=true; HN.words.forEach(x=>{ x.on=x.pos===HN.target; x.res=x.on?'ok':null; }); renderHunt(); return; }
+  if(e.target.closest('#hCheck')){ HN.checked=true; let bad=0,miss=0;
+    HN.words.forEach(x=>{ const t=x.pos===HN.target; x.res=x.on&&t?'ok':x.on?'bad':t?'miss':null; if(x.res==='bad') bad++; if(x.res==='miss') miss++; });
+    renderHunt(); if(!bad&&!miss){ if(!HN.shown) win(3,'Всё нашёл! +3 ⭐'); else praise(); } else oops(); }
+});
+
+/* ---------- fit to the board's screen height ---------- */
+const stage=$('#stage'); let fitSize=0, fitQ=0;
+function baseSize(){ return Math.max(11,Math.min(26,Math.min(innerWidth/118,innerHeight/64))); }
+function fit(reset){
+  const r=document.documentElement;
+  if(innerWidth<760){ fitSize=15; r.style.fontSize='15px'; return; }
+  // start as large as is reasonable for a board, then shrink step by step until the whole task fits
+  let s=reset||!fitSize?Math.min(baseSize()*1.45,34):fitSize, n=0;
+  r.style.fontSize=s.toFixed(2)+'px';
+  const over=()=>stage.scrollHeight>stage.clientHeight+2;
+  while(over() && s>10 && n<24){ s=Math.max(10,s*.95); r.style.fontSize=s.toFixed(2)+'px'; n++; }
+  fitSize=s;
+}
+function fitLater(){ if(fitQ) return; fitQ=requestAnimationFrame(()=>{ fitQ=0; fit(false); }); }
+new MutationObserver(fitLater).observe(stage,{childList:true,subtree:true});
+let rsT; addEventListener('resize',()=>{ clearTimeout(rsT); rsT=setTimeout(()=>fit(true),120); });
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>fit(true));
+
+/* ---------- tabs & grade ---------- */
+let tab=store.get('chr_tab','match');
+function showTab(n){
+  if(!$('#s-'+n)) n='match';
+  tab=n; store.set('chr_tab',n);
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===n));
+  document.querySelectorAll('.sec').forEach(s=>s.hidden = s.id!=='s-'+n);
+  stage.scrollTop=0; fit(true);
+}
+$('#posFilter').onclick=e=>{ const b=e.target.closest('[data-pf]'); if(!b) return; const a=ACT(), id=b.dataset.pf;
+  if(a.has(id)){ if(a.size===1){ owl('Нужна хотя бы одна!',true); return; } a.delete(id); } else a.add(id);
+  store.set(ACT_KEY(),S().pos.map(p=>p.id).filter(x=>a.has(x))); renderAll(); };
+$('#tabs').onclick=e=>{const b=e.target.closest('.tab'); if(b) showTab(b.dataset.tab);};
+function applyGradeTabs(){}
+function renderAll(){
+  document.querySelectorAll('#gradeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.g===grade));
+  renderPosFilter();
+  resetPuzzle(); renderMatch(); renderSortTab(); T={pos:null,idx:0}; renderTasks();
+  Z.custom=''; Z.ownOpen=false; loadSentence(0); renderOwn(); bLast=-1; $('#s-board').innerHTML=''; newBoard();
+  newQuiz(); HN.lastS=-1; HN.lastT=null; newHunt(); fit(true);
+}
+$('#gradeSeg').onclick=e=>{const b=e.target.closest('button'); if(!b||b.dataset.g===grade) return; grade=b.dataset.g; store.set('chr_grade',grade); renderAll(); applyGradeTabs();};
+renderAll(); showTab(tab); applyGradeTabs();
+</script>
+
+</body></html>
